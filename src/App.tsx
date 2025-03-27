@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,44 +23,47 @@ import UserGroups from "./pages/UserGroups";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<Login />} />
-            
-            {/* Admin routes */}
-            <Route path="/" element={<AdminRoute><Dashboard /></AdminRoute>} />
-            <Route path="/rules" element={<AdminRoute><NudgeRules /></AdminRoute>} />
-            <Route path="/rules/new" element={<AdminRoute><CreateRule /></AdminRoute>} />
-            <Route path="/templates" element={<AdminRoute><Templates /></AdminRoute>} />
-            <Route path="/templates/new" element={<AdminRoute><CreateTemplate /></AdminRoute>} />
-            <Route path="/channels" element={<AdminRoute><Channels /></AdminRoute>} />
-            <Route path="/scheduling" element={<AdminRoute><Scheduling /></AdminRoute>} />
-            <Route path="/user-groups" element={<AdminRoute><UserGroups /></AdminRoute>} />
-            <Route path="/analytics" element={<AdminRoute><Analytics /></AdminRoute>} />
-            <Route path="/settings" element={<AdminRoute><Settings /></AdminRoute>} />
-            
-            {/* User routes */}
-            <Route path="/user-dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-            
-            {/* Default redirect to login */}
-            <Route path="/index" element={<Navigate to="/login" />} />
-            
-            {/* 404 catch-all */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  // Create a new QueryClient instance inside the component
+  const queryClient = new QueryClient();
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<Login />} />
+              
+              {/* Admin routes */}
+              <Route path="/" element={<AdminRoute><Dashboard /></AdminRoute>} />
+              <Route path="/rules" element={<AdminRoute><NudgeRules /></AdminRoute>} />
+              <Route path="/rules/new" element={<AdminRoute><CreateRule /></AdminRoute>} />
+              <Route path="/templates" element={<AdminRoute><Templates /></AdminRoute>} />
+              <Route path="/templates/new" element={<AdminRoute><CreateTemplate /></AdminRoute>} />
+              <Route path="/channels" element={<AdminRoute><Channels /></AdminRoute>} />
+              <Route path="/scheduling" element={<AdminRoute><Scheduling /></AdminRoute>} />
+              <Route path="/user-groups" element={<AdminRoute><UserGroups /></AdminRoute>} />
+              <Route path="/analytics" element={<AdminRoute><Analytics /></AdminRoute>} />
+              <Route path="/settings" element={<AdminRoute><Settings /></AdminRoute>} />
+              
+              {/* User routes */}
+              <Route path="/user-dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+              
+              {/* Default redirect to login */}
+              <Route path="/index" element={<Navigate to="/login" />} />
+              
+              {/* 404 catch-all */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
