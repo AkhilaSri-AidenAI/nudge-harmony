@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -204,7 +203,7 @@ const Channels: React.FC = () => {
                 />
               </div>
               
-              <Alert variant="warning" className="bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800">
+              <Alert variant="default" className="bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800">
                 <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                 <AlertTitle>Cost Consideration</AlertTitle>
                 <AlertDescription>
