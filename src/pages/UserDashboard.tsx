@@ -8,6 +8,8 @@ import { BadgeCheck, Calendar, CheckCircle, Clock, Coffee, Edit, Info, ListCheck
 import { useAuth } from '@/contexts/AuthContext';
 import NudgePopupManager from '@/components/nudges/NudgePopupManager';
 import UserNudgeSettings from '@/components/user/UserNudgeSettings';
+import UserNudgeActions from '@/components/user/UserNudgeActions';
+import { toast } from '@/hooks/use-toast';
 
 // Mock data for upcoming meetings
 const upcomingMeetings = [
@@ -27,6 +29,8 @@ const pendingTasks = [
 const UserDashboard: React.FC = () => {
   const { user } = useAuth();
   const [firstVisit, setFirstVisit] = useState(true);
+  const [meetings, setMeetings] = useState(upcomingMeetings);
+  const [tasks, setTasks] = useState(pendingTasks);
   
   // Mark first visit false after component mount
   useEffect(() => {
@@ -39,6 +43,24 @@ const UserDashboard: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [firstVisit]);
+  
+  const handleCompleteTask = (taskId: string) => {
+    setTasks(tasks.filter(task => task.id !== taskId));
+    
+    toast({
+      title: "Task Completed",
+      description: "Great job! The task has been marked as completed."
+    });
+  };
+  
+  const handleDismissMeeting = (meetingId: string) => {
+    setMeetings(meetings.filter(meeting => meeting.id !== meetingId));
+    
+    toast({
+      title: "Meeting Dismissed",
+      description: "The meeting has been removed from your list."
+    });
+  };
   
   return (
     <PageContainer>
@@ -74,7 +96,7 @@ const UserDashboard: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {upcomingMeetings
+                      {meetings
                         .filter(meeting => meeting.date === 'Today')
                         .map(meeting => (
                         <div key={meeting.id} className="flex items-start border-b pb-3 last:border-0 last:pb-0">
@@ -90,14 +112,25 @@ const UserDashboard: React.FC = () => {
                               <Users className="h-3 w-3 mr-1" />
                               <span>{meeting.participants} participants</span>
                             </div>
+                            
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <Button variant="default" size="sm">
+                                Join
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleDismissMeeting(meeting.id)}
+                              >
+                                <Clock className="h-3 w-3 mr-1" />
+                                Reschedule
+                              </Button>
+                            </div>
                           </div>
-                          <Button variant="outline" size="sm">
-                            Join
-                          </Button>
                         </div>
                       ))}
                       
-                      {upcomingMeetings.filter(m => m.date === 'Today').length === 0 && (
+                      {meetings.filter(m => m.date === 'Today').length === 0 && (
                         <div className="flex flex-col items-center justify-center py-6 text-center">
                           <Coffee className="h-12 w-12 text-muted-foreground mb-3" />
                           <p>No meetings scheduled for today</p>
@@ -114,7 +147,7 @@ const UserDashboard: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {upcomingMeetings
+                      {meetings
                         .filter(meeting => meeting.date !== 'Today')
                         .map(meeting => (
                         <div key={meeting.id} className="flex items-start border-b pb-3 last:border-0 last:pb-0">
@@ -129,14 +162,18 @@ const UserDashboard: React.FC = () => {
                               <Users className="h-3 w-3 mr-1" />
                               <span>{meeting.participants} participants</span>
                             </div>
+                            
+                            <div className="mt-2">
+                              <UserNudgeActions 
+                                nudgeId={meeting.id}
+                                onDismiss={() => handleDismissMeeting(meeting.id)}
+                              />
+                            </div>
                           </div>
-                          <Button variant="outline" size="sm">
-                            Details
-                          </Button>
                         </div>
                       ))}
                       
-                      {upcomingMeetings.filter(m => m.date !== 'Today').length === 0 && (
+                      {meetings.filter(m => m.date !== 'Today').length === 0 && (
                         <div className="flex flex-col items-center justify-center py-6 text-center">
                           <Calendar className="h-12 w-12 text-muted-foreground mb-3" />
                           <p>No upcoming meetings</p>
@@ -159,7 +196,7 @@ const UserDashboard: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {pendingTasks.map(task => (
+                    {tasks.map(task => (
                       <div key={task.id} className="flex items-start border-b pb-3 last:border-0 last:pb-0">
                         <div className={`h-10 w-10 rounded-md flex items-center justify-center mr-3
                           ${task.priority === 'High' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' : 
@@ -175,15 +212,24 @@ const UserDashboard: React.FC = () => {
                             <span className="mx-2">•</span>
                             <span>Priority: {task.priority}</span>
                           </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            <span>Complete</span>
-                          </Button>
+                          
+                          <div className="mt-2">
+                            <UserNudgeActions 
+                              nudgeId={task.id}
+                              onComplete={() => handleCompleteTask(task.id)}
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
+                    
+                    {tasks.length === 0 && (
+                      <div className="flex flex-col items-center justify-center py-6 text-center">
+                        <CheckCircle className="h-12 w-12 text-green-500 mb-3" />
+                        <p>All tasks completed!</p>
+                        <p className="text-sm text-muted-foreground">You're all caught up</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
                 <CardFooter>

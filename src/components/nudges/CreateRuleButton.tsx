@@ -11,10 +11,14 @@ interface CreateRuleButtonProps {
 const CreateRuleButton: React.FC<CreateRuleButtonProps> = ({ className }) => {
   const navigate = useNavigate();
   
+  const handleClick = () => {
+    navigate('/rules/new');
+  };
+  
   return (
     <Button 
       className={className}
-      onClick={() => navigate('/rules/new')}
+      onClick={handleClick}
     >
       <PlusCircle className="mr-2 h-4 w-4" /> Create Nudge Rule
     </Button>

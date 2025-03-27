@@ -1,416 +1,281 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import PageContainer from '@/components/layout/PageContainer';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
-import { 
-  Settings as SettingsIcon, 
-  Bell, 
-  Mail, 
-  MessageSquare, 
-  User, 
-  Lock, 
-  Clock,
-  Sliders,
-  Shield,
-  Key
-} from 'lucide-react';
-import { Separator } from '@/components/ui/form';
+import { Bell, Mail, MessageSquare, Globe, Shield, User, Lock, AlertTriangle } from 'lucide-react';
 
 const Settings: React.FC = () => {
-  // General settings form
-  const generalForm = useForm({
+  const form = useForm({
     defaultValues: {
-      systemName: 'NudgeHarmony',
-      companyName: 'Acme Corporation',
-      timezone: 'UTC-5',
-      dateFormat: 'MM/DD/YYYY',
+      emailFormat: 'html',
+      smsProvider: 'twilio',
+      defaultChannel: 'email',
     },
   });
-  
-  // Notification settings form
-  const notificationForm = useForm({
-    defaultValues: {
-      enableEmailNotifications: true,
-      enableSmsNotifications: true,
-      enableWhatsAppNotifications: false,
-      enableInAppNotifications: true,
-      notificationDigest: 'daily',
-      digestTime: '09:00',
-    },
-  });
-  
-  // Security settings form
-  const securityForm = useForm({
-    defaultValues: {
-      passwordPolicy: 'strong',
-      sessionTimeout: '30',
-      enableTwoFactor: false,
-      auditLogging: true,
-    },
-  });
-  
-  // API settings form
-  const apiForm = useForm({
-    defaultValues: {
-      emailApiKey: 'sk_live_XXXXXXXXXXXX',
-      smsApiKey: 'skYYYYYYYYYYYYYY',
-      whatsappApiKey: '',
-    },
-  });
-  
+
   return (
     <PageContainer>
       <div className="page-header">
         <h1 className="page-title">Settings</h1>
-        <p className="page-description">Configure system and user preferences</p>
+        <p className="page-description">Configure your NudgeHarmony system settings</p>
       </div>
       
-      <Tabs defaultValue="general" className="space-y-4">
-        <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <TabsTrigger value="general" className="flex gap-2 items-center">
-            <SettingsIcon className="h-4 w-4" />
-            <span>General</span>
+      <Tabs defaultValue="notifications" className="mt-6">
+        <TabsList className="grid grid-cols-4 w-full max-w-3xl mb-6">
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" /> Notifications
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex gap-2 items-center">
-            <Bell className="h-4 w-4" />
-            <span>Notifications</span>
+          <TabsTrigger value="channels" className="flex items-center gap-2">
+            <Mail className="h-4 w-4" /> Channels
           </TabsTrigger>
-          <TabsTrigger value="security" className="flex gap-2 items-center">
-            <Shield className="h-4 w-4" />
-            <span>Security</span>
+          <TabsTrigger value="account" className="flex items-center gap-2">
+            <User className="h-4 w-4" /> Account
           </TabsTrigger>
-          <TabsTrigger value="api" className="flex gap-2 items-center">
-            <Key className="h-4 w-4" />
-            <span>API Keys</span>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" /> Security
           </TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="general" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>General Settings</CardTitle>
-              <CardDescription>
-                Configure basic system settings and display preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...generalForm}>
-                <form className="space-y-6">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={generalForm.control}
-                      name="systemName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>System Name</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            The name of the nudge system displayed to users
-                          </FormDescription>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={generalForm.control}
-                      name="companyName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Company Name</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            Your company or organization name
-                          </FormDescription>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={generalForm.control}
-                      name="timezone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Timezone</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select timezone" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="UTC-8">Pacific Time (UTC-8)</SelectItem>
-                              <SelectItem value="UTC-7">Mountain Time (UTC-7)</SelectItem>
-                              <SelectItem value="UTC-6">Central Time (UTC-6)</SelectItem>
-                              <SelectItem value="UTC-5">Eastern Time (UTC-5)</SelectItem>
-                              <SelectItem value="UTC+0">UTC</SelectItem>
-                              <SelectItem value="UTC+1">Central European Time (UTC+1)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            System default timezone for scheduling
-                          </FormDescription>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={generalForm.control}
-                      name="dateFormat"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Date Format</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select date format" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
-                              <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
-                              <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            Date display format across the system
-                          </FormDescription>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="flex justify-end">
-                    <Button type="submit">Save Changes</Button>
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>User Interface</CardTitle>
-              <CardDescription>
-                Customize the appearance and behavior of the interface
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Show Quick Actions</p>
-                    <p className="text-sm text-muted-foreground">
-                      Display quick action buttons on the dashboard
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Compact Mode</p>
-                    <p className="text-sm text-muted-foreground">
-                      Use a more compact UI with less whitespace
-                    </p>
-                  </div>
-                  <Switch />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Show Help Tips</p>
-                    <p className="text-sm text-muted-foreground">
-                      Display contextual help tips throughout the interface
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
         
         <TabsContent value="notifications" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Notification Settings</CardTitle>
-              <CardDescription>
-                Configure how and when notifications are sent
-              </CardDescription>
+              <CardDescription>Configure how and when nudges are delivered</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="allow-notifications">Allow Notifications</Label>
+                  <p className="text-sm text-muted-foreground">Enable or disable all notifications</p>
+                </div>
+                <Switch id="allow-notifications" defaultChecked />
+              </div>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="quiet-hours">Quiet Hours</Label>
+                  <p className="text-sm text-muted-foreground">Don't send notifications during these hours</p>
+                </div>
+                <Switch id="quiet-hours" defaultChecked />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="start-time">Start Time</Label>
+                  <Input id="start-time" type="time" defaultValue="22:00" className="mt-1" />
+                </div>
+                <div>
+                  <Label htmlFor="end-time">End Time</Label>
+                  <Input id="end-time" type="time" defaultValue="07:00" className="mt-1" />
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div>
+                <Label>Default Notification Priority</Label>
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  <Button variant="outline" className="justify-start">Low</Button>
+                  <Button variant="default" className="justify-start">Medium</Button>
+                  <Button variant="outline" className="justify-start">High</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Nudge Delivery Rules</CardTitle>
+              <CardDescription>Configure how nudges are processed and delivered</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="batching">Enable Batching</Label>
+                  <p className="text-sm text-muted-foreground">Combine multiple notifications into a single digest</p>
+                </div>
+                <Switch id="batching" />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="max-per-day">Maximum Nudges Per Day</Label>
+                  <p className="text-sm text-muted-foreground">Limit the number of nudges a user can receive daily</p>
+                </div>
+                <Input id="max-per-day" type="number" defaultValue="5" className="w-20 text-right" />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="auto-dismiss">Auto-dismiss After</Label>
+                  <p className="text-sm text-muted-foreground">Automatically dismiss nudges after a set period</p>
+                </div>
+                <Select defaultValue="3days">
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1day">1 Day</SelectItem>
+                    <SelectItem value="3days">3 Days</SelectItem>
+                    <SelectItem value="1week">1 Week</SelectItem>
+                    <SelectItem value="never">Never</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="channels" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Channel Configuration</CardTitle>
+              <CardDescription>Set up and manage notification channels</CardDescription>
             </CardHeader>
             <CardContent>
-              <Form {...notificationForm}>
+              <Form {...form}>
                 <form className="space-y-6">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Notification Channels</h3>
+                    <h3 className="text-lg font-medium flex items-center gap-2">
+                      <Mail className="h-5 w-5" /> Email Settings
+                    </h3>
                     
-                    <div className="grid gap-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4 text-blue-500" />
-                          <div>
-                            <p className="font-medium">Email Notifications</p>
-                            <p className="text-sm text-muted-foreground">
-                              Send nudges via email
-                            </p>
-                          </div>
-                        </div>
-                        <FormField
-                          control={notificationForm.control}
-                          name="enableEmailNotifications"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <MessageSquare className="h-4 w-4 text-green-500" />
-                          <div>
-                            <p className="font-medium">SMS Notifications</p>
-                            <p className="text-sm text-muted-foreground">
-                              Send nudges via SMS
-                            </p>
-                          </div>
-                        </div>
-                        <FormField
-                          control={notificationForm.control}
-                          name="enableSmsNotifications"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <MessageSquare className="h-4 w-4 text-purple-500" />
-                          <div>
-                            <p className="font-medium">WhatsApp Notifications</p>
-                            <p className="text-sm text-muted-foreground">
-                              Send nudges via WhatsApp
-                            </p>
-                          </div>
-                        </div>
-                        <FormField
-                          control={notificationForm.control}
-                          name="enableWhatsAppNotifications"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Bell className="h-4 w-4 text-red-500" />
-                          <div>
-                            <p className="font-medium">In-App Notifications</p>
-                            <p className="text-sm text-muted-foreground">
-                              Show nudges within the application
-                            </p>
-                          </div>
-                        </div>
-                        <FormField
-                          control={notificationForm.control}
-                          name="enableInAppNotifications"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="grid gap-4 md:grid-cols-2">
                     <FormField
-                      control={notificationForm.control}
-                      name="notificationDigest"
+                      control={form.control}
+                      name="emailFormat"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Notification Digest</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
+                          <FormLabel>Email Format</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select frequency" />
+                                <SelectValue placeholder="Select format" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="immediate">Send Immediately</SelectItem>
-                              <SelectItem value="hourly">Hourly Digest</SelectItem>
-                              <SelectItem value="daily">Daily Digest</SelectItem>
-                              <SelectItem value="weekly">Weekly Digest</SelectItem>
+                              <SelectItem value="html">HTML</SelectItem>
+                              <SelectItem value="text">Plain Text</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormItem>
+                        <FormLabel>SMTP Server</FormLabel>
+                        <FormControl>
+                          <Input placeholder="smtp.example.com" />
+                        </FormControl>
+                      </FormItem>
+                      <FormItem>
+                        <FormLabel>SMTP Port</FormLabel>
+                        <FormControl>
+                          <Input placeholder="587" />
+                        </FormControl>
+                      </FormItem>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium flex items-center gap-2">
+                      <MessageSquare className="h-5 w-5" /> SMS Settings
+                    </h3>
+                    
+                    <FormField
+                      control={form.control}
+                      name="smsProvider"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>SMS Provider</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select provider" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="twilio">Twilio</SelectItem>
+                              <SelectItem value="sinch">Sinch</SelectItem>
+                              <SelectItem value="messagebird">MessageBird</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormDescription>
-                            How often to send notification digests
+                            Provider for SMS delivery
                           </FormDescription>
                         </FormItem>
                       )}
                     />
                     
+                    <FormItem>
+                      <FormLabel>API Key</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="••••••••••••••••" />
+                      </FormControl>
+                      <FormDescription>
+                        Your SMS provider API key
+                      </FormDescription>
+                    </FormItem>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium flex items-center gap-2">
+                      <Globe className="h-5 w-5" /> Default Settings
+                    </h3>
+                    
                     <FormField
-                      control={notificationForm.control}
-                      name="digestTime"
+                      control={form.control}
+                      name="defaultChannel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Digest Time</FormLabel>
-                          <FormControl>
-                            <Input type="time" {...field} />
-                          </FormControl>
+                          <FormLabel>Default Notification Channel</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select default channel" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="email">Email</SelectItem>
+                              <SelectItem value="sms">SMS</SelectItem>
+                              <SelectItem value="in-app">In-App</SelectItem>
+                              <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormDescription>
-                            Time of day to send notification digests
+                            Channel used when no specific channel is specified
                           </FormDescription>
                         </FormItem>
                       )}
@@ -418,10 +283,62 @@ const Settings: React.FC = () => {
                   </div>
                   
                   <div className="flex justify-end">
-                    <Button type="submit">Save Changes</Button>
+                    <Button type="submit">Save Channel Settings</Button>
                   </div>
                 </form>
               </Form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="account" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Account Settings</CardTitle>
+              <CardDescription>Manage your account details and preferences</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="full-name">Full Name</Label>
+                  <Input id="full-name" defaultValue="Admin User" className="mt-1" />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input id="email" defaultValue="admin@example.com" className="mt-1" />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="time-zone">Time Zone</Label>
+                <Select defaultValue="utc-8">
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="utc-8">Pacific Time (UTC-8)</SelectItem>
+                    <SelectItem value="utc-5">Eastern Time (UTC-5)</SelectItem>
+                    <SelectItem value="utc+0">GMT (UTC+0)</SelectItem>
+                    <SelectItem value="utc+1">Central European Time (UTC+1)</SelectItem>
+                    <SelectItem value="utc+8">China Standard Time (UTC+8)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Separator />
+              
+              <div>
+                <Label>Interface Theme</Label>
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  <Button variant="outline" className="justify-start">Light</Button>
+                  <Button variant="default" className="justify-start">Dark</Button>
+                  <Button variant="outline" className="justify-start">System</Button>
+                </div>
+              </div>
+              
+              <div className="flex justify-end">
+                <Button>Save Account Settings</Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -430,222 +347,67 @@ const Settings: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Security Settings</CardTitle>
-              <CardDescription>
-                Configure security and account protection settings
-              </CardDescription>
+              <CardDescription>Manage your account security and permissions</CardDescription>
             </CardHeader>
-            <CardContent>
-              <Form {...securityForm}>
-                <form className="space-y-6">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={securityForm.control}
-                      name="passwordPolicy"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password Policy</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select policy" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="basic">Basic (8+ characters)</SelectItem>
-                              <SelectItem value="standard">Standard (8+ chars, 1 uppercase, 1 number)</SelectItem>
-                              <SelectItem value="strong">Strong (8+ chars, mixed case, numbers, symbols)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            Password strength requirements for all users
-                          </FormDescription>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={securityForm.control}
-                      name="sessionTimeout"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Session Timeout (minutes)</FormLabel>
-                          <FormControl>
-                            <Input {...field} type="number" min="5" max="480" />
-                          </FormControl>
-                          <FormDescription>
-                            Inactive time before automatic logout
-                          </FormDescription>
-                        </FormItem>
-                      )}
-                    />
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium flex items-center gap-2">
+                  <Lock className="h-5 w-5" /> Password
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">Change your account password</p>
+                
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="current-password">Current Password</Label>
+                    <Input id="current-password" type="password" className="mt-1" />
                   </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Two-Factor Authentication</p>
-                        <p className="text-sm text-muted-foreground">
-                          Require two-factor authentication for all admin accounts
-                        </p>
-                      </div>
-                      <FormField
-                        control={securityForm.control}
-                        name="enableTwoFactor"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Audit Logging</p>
-                        <p className="text-sm text-muted-foreground">
-                          Log all admin actions for security and compliance
-                        </p>
-                      </div>
-                      <FormField
-                        control={securityForm.control}
-                        name="auditLogging"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="new-password">New Password</Label>
+                    <Input id="new-password" type="password" className="mt-1" />
                   </div>
-                  
-                  <div className="flex justify-end">
-                    <Button type="submit">Save Changes</Button>
+                  <div>
+                    <Label htmlFor="confirm-password">Confirm New Password</Label>
+                    <Input id="confirm-password" type="password" className="mt-1" />
                   </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="api" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>API Integration Settings</CardTitle>
-              <CardDescription>
-                Configure external API integrations for notification channels
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...apiForm}>
-                <form className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Mail className="h-5 w-5 text-blue-500" />
-                      <h3 className="text-lg font-medium">Email API Configuration</h3>
-                    </div>
-                    
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <FormField
-                        control={apiForm.control}
-                        name="emailApiKey"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>API Key</FormLabel>
-                            <FormControl>
-                              <Input {...field} type="password" />
-                            </FormControl>
-                            <FormDescription>
-                              Your email provider API key
-                            </FormDescription>
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="flex items-end">
-                        <Button variant="outline" className="mr-2">Test Connection</Button>
-                        <Button variant="outline">View Documentation</Button>
-                      </div>
-                    </div>
+                </div>
+                
+                <Button className="mt-4">Update Password</Button>
+              </div>
+              
+              <Separator />
+              
+              <div>
+                <h3 className="text-lg font-medium flex items-center gap-2">
+                  <Shield className="h-5 w-5" /> Two-Factor Authentication
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">Enhance your account security with 2FA</p>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="enable-2fa">Enable Two-Factor Authentication</Label>
+                    <p className="text-sm text-muted-foreground">Require an additional code when logging in</p>
                   </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <MessageSquare className="h-5 w-5 text-green-500" />
-                      <h3 className="text-lg font-medium">SMS API Configuration</h3>
-                    </div>
-                    
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <FormField
-                        control={apiForm.control}
-                        name="smsApiKey"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>API Key</FormLabel>
-                            <FormControl>
-                              <Input {...field} type="password" />
-                            </FormControl>
-                            <FormDescription>
-                              Your SMS provider API key
-                            </FormDescription>
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="flex items-end">
-                        <Button variant="outline" className="mr-2">Test Connection</Button>
-                        <Button variant="outline">View Documentation</Button>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <MessageSquare className="h-5 w-5 text-purple-500" />
-                      <h3 className="text-lg font-medium">WhatsApp API Configuration</h3>
-                    </div>
-                    
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <FormField
-                        control={apiForm.control}
-                        name="whatsappApiKey"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>API Key</FormLabel>
-                            <FormControl>
-                              <Input {...field} type="password" />
-                            </FormControl>
-                            <FormDescription>
-                              Your WhatsApp Business API key
-                            </FormDescription>
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="flex items-end">
-                        <Button variant="outline" className="mr-2">Test Connection</Button>
-                        <Button variant="outline">View Documentation</Button>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-end">
-                    <Button type="submit">Save Changes</Button>
-                  </div>
-                </form>
-              </Form>
+                  <Switch id="enable-2fa" />
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div>
+                <h3 className="text-lg font-medium flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5" /> Danger Zone
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">Destructive actions for your account</p>
+                
+                <div className="grid gap-3">
+                  <Button variant="outline" className="border-destructive text-destructive hover:bg-destructive/10">
+                    Delete All My Data
+                  </Button>
+                  <Button variant="destructive">
+                    Delete Account
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

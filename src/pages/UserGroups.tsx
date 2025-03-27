@@ -13,9 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserPlus, MoreVertical, Edit, Trash2, Search } from 'lucide-react';
+import { Users, UserPlus, MoreVertical, Edit, Trash2, Search, UserCog } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +23,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useForm } from 'react-hook-form';
+import { toast } from '@/hooks/use-toast';
+import AddPeopleModal from '@/components/usergroups/AddPeopleModal';
 
 interface UserGroup {
   id: string;
@@ -81,6 +83,8 @@ const UserGroups: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [userGroups, setUserGroups] = useState(mockUserGroups);
+  const [isAddPeopleOpen, setIsAddPeopleOpen] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<UserGroup | null>(null);
   
   const form = useForm({
     defaultValues: {
@@ -107,6 +111,11 @@ const UserGroups: React.FC = () => {
     setUserGroups([...userGroups, newGroup]);
     setIsCreateDialogOpen(false);
     form.reset();
+    
+    toast({
+      title: "Group Created",
+      description: `User group '${data.name}' has been created successfully.`
+    });
   };
   
   const toggleStatus = (id: string) => {
@@ -120,10 +129,44 @@ const UserGroups: React.FC = () => {
           : group
       )
     );
+    
+    const group = userGroups.find(g => g.id === id);
+    const newStatus = group?.status === 'active' ? 'inactive' : 'active';
+    
+    toast({
+      title: `Group ${newStatus === 'active' ? 'Activated' : 'Deactivated'}`,
+      description: `The group '${group?.name}' is now ${newStatus}.`
+    });
   };
   
   const deleteGroup = (id: string) => {
+    const group = userGroups.find(g => g.id === id);
     setUserGroups(prevGroups => prevGroups.filter(group => group.id !== id));
+    
+    toast({
+      title: "Group Deleted",
+      description: `The group '${group?.name}' has been deleted.`
+    });
+  };
+  
+  const handleAddPeople = (group: UserGroup) => {
+    setSelectedGroup(group);
+    setIsAddPeopleOpen(true);
+  };
+  
+  const handleAddUsersToGroup = (userIds: string[]) => {
+    if (!selectedGroup) return;
+    
+    setUserGroups(prevGroups => 
+      prevGroups.map(group => 
+        group.id === selectedGroup.id 
+          ? { 
+              ...group, 
+              members: group.members + userIds.length 
+            } 
+          : group
+      )
+    );
   };
   
   return (
@@ -163,7 +206,7 @@ const UserGroups: React.FC = () => {
                 <TableHead>Members</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="w-[60px]"></TableHead>
+                <TableHead className="w-[120px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -184,30 +227,41 @@ const UserGroups: React.FC = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <Edit className="h-4 w-4 mr-2" />
-                          <span>Edit</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toggleStatus(group.id)}>
-                          <Users className="h-4 w-4 mr-2" />
-                          <span>{group.status === 'active' ? 'Deactivate' : 'Activate'}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => deleteGroup(group.id)} className="text-destructive">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          <span>Delete</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8"
+                        onClick={() => handleAddPeople(group)}
+                      >
+                        <UserPlus className="h-3.5 w-3.5 mr-1" />
+                        Add People
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem>
+                            <Edit className="h-4 w-4 mr-2" />
+                            <span>Edit</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => toggleStatus(group.id)}>
+                            <Users className="h-4 w-4 mr-2" />
+                            <span>{group.status === 'active' ? 'Deactivate' : 'Activate'}</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => deleteGroup(group.id)} className="text-destructive">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            <span>Delete</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -266,6 +320,15 @@ const UserGroups: React.FC = () => {
           </Form>
         </DialogContent>
       </Dialog>
+      
+      {selectedGroup && (
+        <AddPeopleModal 
+          open={isAddPeopleOpen}
+          onClose={() => setIsAddPeopleOpen(false)}
+          onAddUsers={handleAddUsersToGroup}
+          groupName={selectedGroup.name}
+        />
+      )}
     </PageContainer>
   );
 };

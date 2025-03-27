@@ -1,11 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Calendar, Clock, ArrowRight, Settings, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PlusCircle, Calendar, Clock, ArrowRight, Settings, Filter, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import ScheduleNudgeModal, { ScheduleNudgeData } from '@/components/scheduling/ScheduleNudgeModal';
+import { format } from 'date-fns';
+import { toast } from '@/hooks/use-toast';
 
 const mockScheduledNudges = [
   {
@@ -65,6 +69,45 @@ const timesOfDay = Array.from({ length: 10 }, (_, i) => ({
 })));
 
 const Scheduling: React.FC = () => {
+  const [scheduledNudges, setScheduledNudges] = useState(mockScheduledNudges);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const handleScheduleNudge = (data: ScheduleNudgeData) => {
+    const newNudge = {
+      id: Date.now().toString(),
+      title: data.title,
+      time: format(new Date(`2000-01-01T${data.time}`), 'h:mm a'),
+      date: format(data.date, 'EEEE, MMMM d, yyyy'),
+      type: 'one-time',
+      target: data.targetGroup === 'all-employees' 
+        ? 'All Employees'
+        : data.targetGroup === 'managers'
+          ? 'Managers Only'
+          : data.targetGroup === 'dev-team'
+            ? 'Development Team'
+            : data.targetGroup === 'marketing'
+              ? 'Marketing Team'
+              : 'Inactive Users',
+      channel: data.channel,
+    };
+    
+    setScheduledNudges([newNudge, ...scheduledNudges]);
+    
+    toast({
+      title: "Nudge Scheduled",
+      description: `"${data.title}" scheduled for ${format(data.date, 'PP')} at ${format(new Date(`2000-01-01T${data.time}`), 'h:mm a')}`,
+    });
+  };
+  
+  const deleteNudge = (id: string) => {
+    setScheduledNudges(scheduledNudges.filter(nudge => nudge.id !== id));
+    
+    toast({
+      title: "Nudge Deleted",
+      description: "The scheduled nudge has been removed.",
+    });
+  };
+  
   return (
     <PageContainer>
       <div className="flex justify-between items-center mb-6">
@@ -72,10 +115,17 @@ const Scheduling: React.FC = () => {
           <h1 className="page-title">Scheduling</h1>
           <p className="page-description">View and manage scheduled nudges</p>
         </div>
-        <Button>
+        <Button onClick={() => setIsModalOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" /> Schedule Nudge
         </Button>
       </div>
+      
+      <Alert variant="default" className="mb-6 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          One-time scheduling is for urgent or special cases. For regular or recurring nudges, please use the <a href="/rules" className="underline font-medium">Nudge Rules</a> tab to create automated rules.
+        </AlertDescription>
+      </Alert>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
         <div className="lg:col-span-2 order-2 lg:order-1">
@@ -212,7 +262,7 @@ const Scheduling: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockScheduledNudges.map((nudge) => (
+                {scheduledNudges.map((nudge) => (
                   <div
                     key={nudge.id}
                     className="border border-border rounded-lg p-3 hover:bg-muted/30 transition-colors"
@@ -240,28 +290,66 @@ const Scheduling: React.FC = () => {
                       <Clock className="h-3.5 w-3.5" />
                       <span>{nudge.time}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {nudge.target}
-                      </Badge>
-                      <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                      <Badge variant="secondary" className="text-xs capitalize">
-                        {nudge.channel}
-                      </Badge>
+                    <div className="flex items-center gap-2 justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {nudge.target}
+                        </Badge>
+                        <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                        <Badge variant="secondary" className="text-xs capitalize">
+                          {nudge.channel}
+                        </Badge>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10"
+                        onClick={() => deleteNudge(nudge.id)}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M3 6h18" />
+                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                          <line x1="10" y1="11" x2="10" y2="17" />
+                          <line x1="14" y1="11" x2="14" y2="17" />
+                        </svg>
+                      </Button>
                     </div>
                   </div>
                 ))}
+                {scheduledNudges.length === 0 && (
+                  <div className="text-center h-24 flex flex-col items-center justify-center text-muted-foreground">
+                    <Calendar className="h-8 w-8 mb-2 opacity-40" />
+                    <p>No nudges scheduled</p>
+                  </div>
+                )}
               </div>
               
               <div className="mt-4 text-center">
-                <Button variant="outline" className="w-full">
-                  <Settings className="mr-2 h-4 w-4" /> Manage All Schedules
+                <Button variant="outline" className="w-full" onClick={() => setIsModalOpen(true)}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Schedule New Nudge
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+      
+      <ScheduleNudgeModal 
+        open={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSchedule={handleScheduleNudge} 
+      />
     </PageContainer>
   );
 };
