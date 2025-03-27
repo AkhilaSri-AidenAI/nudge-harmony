@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { X, Bell, Calendar, Clock, ArrowRight, Check, Snooze, Clock3 } from 'lucide-react';
+import { X, Bell, Calendar, Clock, ArrowRight, Check, Clock3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,7 +11,6 @@ const NudgePopupManager: React.FC = () => {
   const [meetingVisible, setMeetingVisible] = useState(false);
   const [taskVisible, setTaskVisible] = useState(false);
   
-  // Simulated next meeting data
   const nextMeeting = {
     id: '1',
     title: 'Team Standup',
@@ -20,7 +18,6 @@ const NudgePopupManager: React.FC = () => {
     date: 'Today'
   };
   
-  // Simulated task data
   const taskData = {
     id: '2',
     title: 'Complete project documentation',
@@ -28,7 +25,6 @@ const NudgePopupManager: React.FC = () => {
     priority: 'High'
   };
   
-  // Show welcome message first
   useEffect(() => {
     const welcomeTimer = setTimeout(() => {
       setWelcomeVisible(true);
@@ -37,11 +33,9 @@ const NudgePopupManager: React.FC = () => {
     return () => clearTimeout(welcomeTimer);
   }, []);
   
-  // Show meeting reminder after welcome message is closed
   useEffect(() => {
     if (!welcomeVisible && user) {
       const meetingTimer = setTimeout(() => {
-        // Randomly show either meeting or task notification
         const showMeeting = Math.random() > 0.5;
         if (showMeeting) {
           setMeetingVisible(true);
@@ -54,7 +48,6 @@ const NudgePopupManager: React.FC = () => {
     }
   }, [welcomeVisible, user]);
   
-  // Handlers for different actions
   const handleCloseWelcome = () => setWelcomeVisible(false);
   const handleCloseMeeting = () => setMeetingVisible(false);
   const handleCloseTask = () => setTaskVisible(false);
@@ -97,7 +90,6 @@ const NudgePopupManager: React.FC = () => {
   
   return (
     <>
-      {/* Welcome nudge */}
       {welcomeVisible && (
         <div className="fixed top-5 right-5 z-50 max-w-sm w-full animate-fade-in">
           <Card className="bg-gradient-to-br from-blue-500 to-purple-600 text-white border-none shadow-lg">
@@ -135,7 +127,6 @@ const NudgePopupManager: React.FC = () => {
         </div>
       )}
       
-      {/* Meeting reminder nudge */}
       {meetingVisible && (
         <div className="fixed top-5 right-5 z-50 max-w-sm w-full animate-fade-in">
           <Card className="border-l-4 border-l-blue-500">
@@ -168,7 +159,7 @@ const NudgePopupManager: React.FC = () => {
                   onClick={handleSnooze}
                   className="flex-1"
                 >
-                  <Snooze className="h-4 w-4 mr-1" />
+                  <Clock3 className="h-4 w-4 mr-1" />
                   Snooze
                 </Button>
                 <Button
@@ -195,7 +186,6 @@ const NudgePopupManager: React.FC = () => {
         </div>
       )}
       
-      {/* Task reminder nudge */}
       {taskVisible && (
         <div className="fixed top-5 right-5 z-50 max-w-sm w-full animate-fade-in">
           <Card className="border-l-4 border-l-red-500">
@@ -247,7 +237,7 @@ const NudgePopupManager: React.FC = () => {
                   onClick={handleSnooze}
                   className="flex-1"
                 >
-                  <Snooze className="h-4 w-4 mr-1" />
+                  <Clock3 className="h-4 w-4 mr-1" />
                   Snooze
                 </Button>
                 <Button
