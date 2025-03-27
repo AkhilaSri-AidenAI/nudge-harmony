@@ -64,7 +64,7 @@ const ScheduleNudgeModal: React.FC<ScheduleNudgeModalProps> = ({ open, onClose, 
         <Alert variant="default" className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            One-time nudges are for urgent or special cases only. For recurring nudges, please use the Nudge Rules tab.
+            <strong>Important:</strong> One-time nudges are for urgent or special cases only. For recurring nudges, please use the Nudge Rules tab.
           </AlertDescription>
         </Alert>
         
@@ -102,6 +102,7 @@ const ScheduleNudgeModal: React.FC<ScheduleNudgeModalProps> = ({ open, onClose, 
                       selected={date}
                       onSelect={setDate}
                       initialFocus
+                      disabled={(date) => date < new Date()}
                     />
                   </PopoverContent>
                 </Popover>
@@ -198,7 +199,7 @@ const ScheduleNudgeModal: React.FC<ScheduleNudgeModalProps> = ({ open, onClose, 
                 Cancel
               </Button>
               <Button type="submit" disabled={!date}>
-                Schedule Nudge
+                Schedule One-Time Nudge
               </Button>
             </DialogFooter>
           </form>

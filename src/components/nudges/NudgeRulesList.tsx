@@ -34,6 +34,8 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
 
 interface NudgeRule {
   id: string;
@@ -115,6 +117,7 @@ const triggerIcons = {
 const NudgeRulesList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [rules, setRules] = useState(mockRules);
+  const navigate = useNavigate();
   
   const filteredRules = rules.filter(rule => 
     rule.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -132,6 +135,51 @@ const NudgeRulesList: React.FC = () => {
           : rule
       )
     );
+    
+    const rule = rules.find(r => r.id === id);
+    const newStatus = rule?.status === 'active' ? 'inactive' : 'active';
+    
+    toast({
+      title: `Rule ${newStatus === 'active' ? 'Activated' : 'Deactivated'}`,
+      description: `"${rule?.name}" is now ${newStatus}.`
+    });
+  };
+  
+  const handleEditRule = (id: string) => {
+    // In a real app, this would navigate to an edit page with the rule ID
+    toast({
+      title: "Edit Rule",
+      description: "Opening rule editor...",
+    });
+  };
+  
+  const handleDuplicateRule = (id: string) => {
+    const ruleToDuplicate = rules.find(rule => rule.id === id);
+    if (!ruleToDuplicate) return;
+    
+    const duplicatedRule = {
+      ...ruleToDuplicate,
+      id: Date.now().toString(),
+      name: `${ruleToDuplicate.name} (Copy)`,
+      status: 'draft' as const,
+    };
+    
+    setRules([duplicatedRule, ...rules]);
+    
+    toast({
+      title: "Rule Duplicated",
+      description: `A copy of "${ruleToDuplicate.name}" has been created.`
+    });
+  };
+  
+  const handleDeleteRule = (id: string) => {
+    const ruleToDelete = rules.find(rule => rule.id === id);
+    setRules(rules.filter(rule => rule.id !== id));
+    
+    toast({
+      title: "Rule Deleted",
+      description: `"${ruleToDelete?.name}" has been deleted.`
+    });
   };
   
   return (
@@ -234,16 +282,19 @@ const NudgeRulesList: React.FC = () => {
                           </>
                         )}
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleEditRule(rule.id)}>
                         <Edit className="h-4 w-4 mr-2" />
                         <span>Edit</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDuplicateRule(rule.id)}>
                         <Copy className="h-4 w-4 mr-2" />
                         <span>Duplicate</span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive">
+                      <DropdownMenuItem 
+                        onClick={() => handleDeleteRule(rule.id)} 
+                        className="text-destructive"
+                      >
                         <Trash2 className="h-4 w-4 mr-2" />
                         <span>Delete</span>
                       </DropdownMenuItem>

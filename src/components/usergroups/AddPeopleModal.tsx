@@ -55,7 +55,7 @@ const AddPeopleModal: React.FC<AddPeopleModalProps> = ({ open, onClose, onAddUse
   };
   
   const handleSelectAll = () => {
-    if (selectedUsers.length === filteredUsers.length) {
+    if (selectedUsers.length === filteredUsers.length && filteredUsers.length > 0) {
       setSelectedUsers([]);
     } else {
       setSelectedUsers(filteredUsers.map(user => user.id));

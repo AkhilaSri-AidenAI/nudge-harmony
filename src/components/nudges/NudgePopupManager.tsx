@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, Bell, Calendar, Clock, ArrowRight, Check, Clock3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import UserNudgeActions from '@/components/user/UserNudgeActions';
 
 const NudgePopupManager: React.FC = () => {
   const { user } = useAuth();
@@ -152,35 +154,13 @@ const NudgePopupManager: React.FC = () => {
                 </div>
               </div>
               
-              <div className="flex flex-wrap justify-between gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSnooze}
-                  className="flex-1"
-                >
-                  <Clock3 className="h-4 w-4 mr-1" />
-                  Snooze
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRemindLater}
-                  className="flex-1"
-                >
-                  <Clock3 className="h-4 w-4 mr-1" />
-                  Remind Later
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleReschedule}
-                  className="flex-1"
-                >
-                  <Calendar className="h-4 w-4 mr-1" />
-                  Reschedule
-                </Button>
-              </div>
+              <UserNudgeActions 
+                nudgeId={nextMeeting.id}
+                onComplete={handleMarkAsFinished}
+                onDismiss={handleCloseMeeting}
+                onSnooze={handleSnooze}
+                onReschedule={handleReschedule}
+              />
             </CardContent>
           </Card>
         </div>
@@ -230,35 +210,13 @@ const NudgePopupManager: React.FC = () => {
                 </div>
               </div>
               
-              <div className="flex flex-wrap justify-between gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSnooze}
-                  className="flex-1"
-                >
-                  <Clock3 className="h-4 w-4 mr-1" />
-                  Snooze
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRemindLater}
-                  className="flex-1"
-                >
-                  <Clock3 className="h-4 w-4 mr-1" />
-                  Remind Later
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleMarkAsFinished}
-                  className="flex-1"
-                >
-                  <Check className="h-4 w-4 mr-1" />
-                  Mark Complete
-                </Button>
-              </div>
+              <UserNudgeActions 
+                nudgeId={taskData.id}
+                onComplete={handleMarkAsFinished}
+                onDismiss={handleCloseTask}
+                onSnooze={handleSnooze}
+                onReschedule={handleReschedule}
+              />
             </CardContent>
           </Card>
         </div>

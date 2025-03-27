@@ -19,6 +19,7 @@ const CreateRuleButton: React.FC<CreateRuleButtonProps> = ({ className }) => {
     <Button 
       className={className}
       onClick={handleClick}
+      variant="default"
     >
       <PlusCircle className="mr-2 h-4 w-4" /> Create Nudge Rule
     </Button>

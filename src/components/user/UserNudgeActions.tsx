@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Check, Clock, Trash2 } from 'lucide-react';
+import { Calendar, Check, Clock3, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 
@@ -57,22 +57,22 @@ const UserNudgeActions: React.FC<NudgeActionsProps> = ({
   
   return (
     <div className="flex flex-wrap gap-2">
-      <Button variant="outline" size="sm" onClick={handleComplete}>
+      <Button variant="outline" size="sm" onClick={handleComplete} className="flex-1">
         <Check className="h-4 w-4 mr-1" />
         <span>Complete</span>
       </Button>
       
-      <Button variant="outline" size="sm" onClick={handleSnooze}>
-        <Clock className="h-4 w-4 mr-1" />
+      <Button variant="outline" size="sm" onClick={handleSnooze} className="flex-1">
+        <Clock3 className="h-4 w-4 mr-1" />
         <span>Snooze</span>
       </Button>
       
-      <Button variant="outline" size="sm" onClick={handleReschedule}>
+      <Button variant="outline" size="sm" onClick={handleReschedule} className="flex-1">
         <Calendar className="h-4 w-4 mr-1" />
         <span>Reschedule</span>
       </Button>
       
-      <Button variant="ghost" size="sm" onClick={handleDismiss} className="text-destructive hover:text-destructive hover:bg-destructive/10">
+      <Button variant="ghost" size="sm" onClick={handleDismiss} className="flex-1 text-destructive hover:text-destructive hover:bg-destructive/10">
         <Trash2 className="h-4 w-4 mr-1" />
         <span>Dismiss</span>
       </Button>
