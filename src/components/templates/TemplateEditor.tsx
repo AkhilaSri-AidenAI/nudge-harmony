@@ -31,7 +31,29 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Save, ArrowLeft, Eye, Code, FileText, Mail, MessageSquare, Bell, Tag, User, Clock, Calendar } from 'lucide-react';
+import { 
+  Save, 
+  ArrowLeft, 
+  Eye, 
+  Code, 
+  FileText, 
+  Mail, 
+  MessageSquare, 
+  Bell, 
+  Tag, 
+  User, 
+  Clock, 
+  Calendar,
+  Template
+} from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 type TemplateFormValues = {
   name: string;
@@ -40,9 +62,42 @@ type TemplateFormValues = {
   content: string;
 };
 
+// Predefined templates data
+const predefinedTemplates = [
+  {
+    id: 'weekly-checkin',
+    name: 'Weekly Check-in Reminder',
+    type: 'email',
+    subject: 'Weekly Check-in Reminder',
+    content: 'Hi {firstName},\n\nThis is a friendly reminder about your weekly check-in. Please take a moment to update your progress on assigned tasks.\n\nBest regards,\n{companyName} Team'
+  },
+  {
+    id: 'task-completion',
+    name: 'Task Completion Reminder',
+    type: 'in-app',
+    subject: 'Task Completion Reminder',
+    content: 'Hi {firstName},\n\nYou have {taskCount} tasks due soon. Please complete them at your earliest convenience.\n\nThanks,\n{companyName} Team'
+  },
+  {
+    id: 'upcoming-meeting',
+    name: 'Upcoming Meeting Notification',
+    type: 'whatsapp',
+    subject: 'Upcoming Meeting Reminder',
+    content: 'Hi {firstName},\n\nThis is a reminder that you have a meeting scheduled for tomorrow. Please make sure you're prepared.\n\nRegards,\n{companyName} Team'
+  },
+  {
+    id: 'feedback-request',
+    name: 'Feedback Request',
+    type: 'sms',
+    subject: 'We Value Your Feedback',
+    content: 'Hi {firstName}, we would appreciate your feedback on your recent experience with {companyName}. Please take a moment to share your thoughts. Thank you!'
+  }
+];
+
 const TemplateEditor: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('edit');
+  const [showPredefinedDialog, setShowPredefinedDialog] = useState(false);
   
   const form = useForm<TemplateFormValues>({
     defaultValues: {
@@ -63,6 +118,15 @@ const TemplateEditor: React.FC = () => {
   const insertVariable = (variable: string) => {
     const currentContent = form.getValues('content');
     form.setValue('content', currentContent + ` {${variable}}`, { shouldDirty: true });
+  };
+
+  const applyPredefinedTemplate = (template: any) => {
+    form.setValue('name', template.name, { shouldDirty: true });
+    form.setValue('type', template.type, { shouldDirty: true });
+    form.setValue('subject', template.subject, { shouldDirty: true });
+    form.setValue('content', template.content, { shouldDirty: true });
+    setShowPredefinedDialog(false);
+    toast.success(`Applied template: ${template.name}`);
   };
   
   const variables = [
@@ -89,10 +153,47 @@ const TemplateEditor: React.FC = () => {
         <div className="lg:col-span-2">
           <Card className="glass-card">
             <CardHeader>
-              <CardTitle>Template Details</CardTitle>
-              <CardDescription>
-                Create a new message template that can be used in nudge rules
-              </CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Template Details</CardTitle>
+                  <CardDescription>
+                    Create a new message template that can be used in nudge rules
+                  </CardDescription>
+                </div>
+                <Dialog open={showPredefinedDialog} onOpenChange={setShowPredefinedDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <Template className="mr-2 h-4 w-4" />
+                      Predefined Templates
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle>Choose a Predefined Template</DialogTitle>
+                      <DialogDescription>
+                        Select a template to use as your starting point
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      {predefinedTemplates.map((template) => (
+                        <Button
+                          key={template.id}
+                          variant="outline"
+                          className="justify-start h-auto py-3 px-4"
+                          onClick={() => applyPredefinedTemplate(template)}
+                        >
+                          <div className="flex flex-col items-start text-left">
+                            <span className="font-medium">{template.name}</span>
+                            <span className="text-xs text-muted-foreground mt-1">
+                              Type: {template.type.charAt(0).toUpperCase() + template.type.slice(1)}
+                            </span>
+                          </div>
+                        </Button>
+                      ))}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -123,6 +224,7 @@ const TemplateEditor: React.FC = () => {
                           <Select 
                             onValueChange={field.onChange} 
                             defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>

@@ -12,6 +12,7 @@ const CreateRuleButton: React.FC<CreateRuleButtonProps> = ({ className }) => {
   const navigate = useNavigate();
   
   const handleClick = () => {
+    console.log('Navigating to create rule page');
     navigate('/rules/new');
   };
   

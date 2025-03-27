@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { BellIcon, SearchIcon, MenuIcon, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/ui/ThemeToggle';
@@ -12,13 +12,56 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger 
+} from "@/components/ui/dialog";
+import { useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
   toggleSidebar: () => void;
 }
 
+// Mock notifications data
+const notifications = [
+  { id: 1, title: 'Task Reminder', message: 'You have 3 tasks due today', time: '5 minutes ago', read: false },
+  { id: 2, title: 'Meeting Update', message: 'Your 2pm meeting has been rescheduled', time: '1 hour ago', read: false },
+  { id: 3, title: 'New Template', message: 'A new template was added to the system', time: '3 hours ago', read: true },
+];
+
+const settingsOptions = [
+  { id: 'profile', label: 'Profile Settings' },
+  { id: 'notifications', label: 'Notification Preferences' },
+  { id: 'account', label: 'Account Settings' },
+  { id: 'security', label: 'Security & Privacy' },
+];
+
 const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(notifications.filter(n => !n.read).length);
+  
+  const markAllAsRead = () => {
+    setUnreadCount(0);
+    // In a real application, you would update this in your backend
+    console.log('Marked all notifications as read');
+  };
+
+  const handleSettingsOptionClick = (optionId: string) => {
+    console.log(`Navigating to settings option: ${optionId}`);
+    setSettingsOpen(false);
+    navigate('/settings');
+  };
   
   return (
     <div className="h-16 border-b border-border flex items-center px-4 justify-between bg-background/95 backdrop-blur-sm sticky top-0 z-30">
@@ -41,13 +84,88 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="relative animate-pulse-subtle">
-          <BellIcon className="h-5 w-5" />
-          <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-purple-500"></span>
-        </Button>
-        <Button variant="ghost" size="icon">
-          <Settings className="h-5 w-5" />
-        </Button>
+        <Popover open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative">
+              <BellIcon className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-purple-500 flex items-center justify-center text-[10px] text-white font-medium">
+                  {unreadCount}
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-0" align="end">
+            <div className="flex items-center justify-between p-3 border-b">
+              <h3 className="font-medium">Notifications</h3>
+              {unreadCount > 0 && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-xs h-7"
+                  onClick={markAllAsRead}
+                >
+                  Mark all as read
+                </Button>
+              )}
+            </div>
+            <div className="max-h-80 overflow-y-auto">
+              {notifications.length > 0 ? (
+                <div className="divide-y">
+                  {notifications.map((notification) => (
+                    <div 
+                      key={notification.id} 
+                      className={`p-3 hover:bg-accent/50 cursor-pointer ${
+                        !notification.read ? 'bg-blue-50 dark:bg-blue-900/10' : ''
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <span className="font-medium text-sm">{notification.title}</span>
+                        <span className="text-[10px] text-muted-foreground">{notification.time}</span>
+                      </div>
+                      <p className="text-xs mt-1 text-muted-foreground">{notification.message}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  No notifications
+                </div>
+              )}
+            </div>
+            <div className="p-2 border-t text-center">
+              <Button variant="ghost" size="sm" className="w-full text-xs">
+                View all notifications
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+        
+        <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Settings className="h-5 w-5" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle>Settings</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-2 py-4">
+              {settingsOptions.map((option) => (
+                <Button
+                  key={option.id}
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => handleSettingsOptionClick(option.id)}
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+        
         <ThemeToggle />
         
         {user && (
@@ -70,7 +188,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                 <div className="text-xs text-muted-foreground mt-1">Role: {user.role.charAt(0).toUpperCase() + user.role.slice(1)}</div>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/settings')}>
                 Profile Settings
               </DropdownMenuItem>
               <DropdownMenuItem onClick={logout}>
