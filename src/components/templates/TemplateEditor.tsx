@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -44,7 +43,7 @@ import {
   User, 
   Clock, 
   Calendar,
-  Template
+  FileTemplate
 } from 'lucide-react';
 import {
   Dialog,
@@ -163,7 +162,7 @@ const TemplateEditor: React.FC = () => {
                 <Dialog open={showPredefinedDialog} onOpenChange={setShowPredefinedDialog}>
                   <DialogTrigger asChild>
                     <Button variant="outline">
-                      <Template className="mr-2 h-4 w-4" />
+                      <FileTemplate className="mr-2 h-4 w-4" />
                       Predefined Templates
                     </Button>
                   </DialogTrigger>
