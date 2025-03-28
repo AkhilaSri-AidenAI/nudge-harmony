@@ -83,7 +83,7 @@ const predefinedTemplates = [
     name: 'Upcoming Meeting Notification',
     type: 'whatsapp',
     subject: 'Upcoming Meeting Reminder',
-    content: 'Hi {firstName},\n\nThis is a reminder that you have a meeting scheduled for tomorrow. Please make sure you're prepared.\n\nRegards,\n{companyName} Team'
+    content: "Hi {firstName},\n\nThis is a reminder that you have a meeting scheduled for tomorrow. Please make sure you're prepared.\n\nRegards,\n{companyName} Team"
   },
   {
     id: 'feedback-request',
