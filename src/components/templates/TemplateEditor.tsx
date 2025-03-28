@@ -43,7 +43,7 @@ import {
   User, 
   Clock, 
   Calendar,
-  FileTemplate
+  LayoutTemplate
 } from 'lucide-react';
 import {
   Dialog,
@@ -162,7 +162,7 @@ const TemplateEditor: React.FC = () => {
                 <Dialog open={showPredefinedDialog} onOpenChange={setShowPredefinedDialog}>
                   <DialogTrigger asChild>
                     <Button variant="outline">
-                      <FileTemplate className="mr-2 h-4 w-4" />
+                      <LayoutTemplate className="mr-2 h-4 w-4" />
                       Predefined Templates
                     </Button>
                   </DialogTrigger>
