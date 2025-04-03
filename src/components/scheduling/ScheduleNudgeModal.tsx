@@ -128,13 +128,14 @@ const ScheduleNudgeModal: React.FC<ScheduleNudgeModalProps> = ({ open, onClose, 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Target Group</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || "select-group"}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select target group" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      <SelectItem value="select-group">Select target group</SelectItem>
                       <SelectItem value="all-employees">All Employees</SelectItem>
                       <SelectItem value="managers">Managers Only</SelectItem>
                       <SelectItem value="dev-team">Development Team</SelectItem>
