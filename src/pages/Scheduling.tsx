@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
 import { Button } from '@/components/ui/button';
@@ -218,6 +219,36 @@ const Scheduling: React.FC = () => {
   
   const eventDates = allEvents.map(event => event.date);
   
+  // Generate calendar day contents to show dots for events
+  const getDayContents = (day: Date) => {
+    const eventsOnDay = allEvents.filter(event => 
+      event.date.getDate() === day.getDate() && 
+      event.date.getMonth() === day.getMonth() && 
+      event.date.getFullYear() === day.getFullYear()
+    );
+    
+    if (eventsOnDay.length === 0) {
+      return undefined;
+    }
+    
+    return (
+      <div className="relative w-full h-full flex justify-center">
+        <div className="absolute bottom-1 flex gap-1">
+          {eventsOnDay.slice(0, 3).map((event, idx) => (
+            <div 
+              key={idx}
+              className={`h-1 w-1 rounded-full ${
+                event.priority === 'high' ? 'bg-red-500' : 
+                event.priority === 'medium' ? 'bg-blue-500' : 'bg-green-500'
+              }`}
+            />
+          ))}
+          {eventsOnDay.length > 3 && <div className="h-1 w-1 rounded-full bg-gray-500" />}
+        </div>
+      </div>
+    );
+  };
+  
   return (
     <PageContainer>
       <div className="flex justify-between items-center mb-6">
@@ -252,7 +283,7 @@ const Scheduling: React.FC = () => {
                       <SelectValue placeholder="Any priority" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="any">Any priority</SelectItem>
+                      <SelectItem value="">Any priority</SelectItem>
                       <SelectItem value="low">Low</SelectItem>
                       <SelectItem value="medium">Medium</SelectItem>
                       <SelectItem value="high">High</SelectItem>
@@ -270,7 +301,7 @@ const Scheduling: React.FC = () => {
                       <SelectValue placeholder="Any channel" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="any">Any channel</SelectItem>
+                      <SelectItem value="">Any channel</SelectItem>
                       <SelectItem value="email">Email</SelectItem>
                       <SelectItem value="sms">SMS</SelectItem>
                       <SelectItem value="whatsapp">WhatsApp</SelectItem>
@@ -289,7 +320,7 @@ const Scheduling: React.FC = () => {
                       <SelectValue placeholder="Any group" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="any">Any group</SelectItem>
+                      <SelectItem value="">Any group</SelectItem>
                       <SelectItem value="all-employees">All Employees</SelectItem>
                       <SelectItem value="managers">Managers Only</SelectItem>
                       <SelectItem value="dev-team">Development Team</SelectItem>
@@ -354,40 +385,60 @@ const Scheduling: React.FC = () => {
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2 order-2 lg:order-1">
+          <CardHeader className="border-b pb-3">
+            <CardTitle className="flex items-center text-xl">
               <CalendarIcon className="mr-2 h-5 w-5" /> 
-              Calendar
+              Scheduling Calendar
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4">
             <Calendar
               mode="single"
               selected={date}
               onSelect={setDate}
-              className="rounded-md border"
+              className="rounded-md border w-full p-3 mx-auto pointer-events-auto"
               modifiers={{
-                hasEvent: (date) => 
+                hasEvent: (day) => 
                   eventDates.some(eventDate => 
-                    eventDate.getDate() === date.getDate() &&
-                    eventDate.getMonth() === date.getMonth() &&
-                    eventDate.getFullYear() === date.getFullYear()
+                    eventDate.getDate() === day.getDate() &&
+                    eventDate.getMonth() === day.getMonth() &&
+                    eventDate.getFullYear() === day.getFullYear()
                   )
               }}
-              modifiersStyles={{
-                hasEvent: {
-                  fontWeight: 'bold',
-                  backgroundColor: 'var(--primary-50)',
+              modifiersClassNames={{
+                hasEvent: "bg-primary/10 font-bold",
+                selected: "bg-primary text-primary-foreground"
+              }}
+              components={{
+                DayContent: ({ date, activeModifiers }) => {
+                  return (
+                    <div className="relative flex flex-col items-center justify-center w-full h-full">
+                      <span>{date.getDate()}</span>
+                      {getDayContents(date)}
+                    </div>
+                  );
                 }
+              }}
+              showOutsideDays={true}
+              fixedWeeks
+              styles={{
+                months: { width: '100%' },
+                caption: { marginBottom: '1rem' },
+                caption_label: { fontSize: '1.1rem', fontWeight: 'bold' },
+                table: { width: '100%' },
+                head_row: { marginBottom: '0.5rem' },
+                row: { width: '100%' },
+                cell: { width: 'calc(100% / 7)', height: '3rem', position: 'relative' },
+                day: { margin: '0 auto', width: '2.5rem', height: '2.5rem', fontSize: '0.9rem' }
               }}
             />
           </CardContent>
         </Card>
         
-        <Card className="md:col-span-2">
-          <CardHeader>
+        <Card className="lg:col-span-1 order-1 lg:order-2">
+          <CardHeader className="border-b pb-3">
             <CardTitle>
               {date ? (
                 <>Scheduled Nudges for {format(date, 'MMMM d, yyyy')}</>
@@ -396,7 +447,7 @@ const Scheduling: React.FC = () => {
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4 overflow-auto max-h-[500px]">
             {nudgeEvents.length > 0 ? (
               <div className="space-y-3">
                 {nudgeEvents.map((event) => (
