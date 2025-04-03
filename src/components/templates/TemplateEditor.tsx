@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -21,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from 'sonner';
 
 const templateFormSchema = z.object({
@@ -39,6 +41,48 @@ type TemplateFormValues = z.infer<typeof templateFormSchema>;
 interface TemplateEditorProps {
   existingTemplate?: any;
 }
+
+// Predefined templates for different channel types
+const predefinedTemplates = {
+  email: [
+    { 
+      name: "Welcome Email", 
+      subject: "Welcome to Our Platform!",
+      content: "Hello {{name}},\n\nWelcome to our platform! We're excited to have you on board.\n\nHere are some quick tips to get started:\n- Complete your profile\n- Explore features\n- Reach out if you need help\n\nBest regards,\nThe Team"
+    },
+    { 
+      name: "Task Reminder", 
+      subject: "Reminder: Task Due Soon",
+      content: "Hello {{name}},\n\nThis is a friendly reminder that your task \"{{task}}\" is due on {{date}}.\n\nPlease make sure to complete it on time.\n\nThanks,\nProject Management Team"
+    }
+  ],
+  sms: [
+    { 
+      name: "Login OTP", 
+      content: "Your verification code is {{code}}. Valid for 10 minutes. Do not share this code with anyone."
+    },
+    { 
+      name: "Appointment Reminder", 
+      content: "Reminder: You have an appointment scheduled for {{date}} at {{time}}. Reply YES to confirm or NO to reschedule."
+    }
+  ],
+  whatsapp: [
+    { 
+      name: "Support Ticket Update", 
+      content: "Hello {{name}},\n\nYour support ticket #{{ticketId}} has been updated. Status: {{status}}.\n\nClick here to view details: {{link}}"
+    }
+  ],
+  "in-app": [
+    { 
+      name: "New Feature Announcement", 
+      content: "We've just launched {{feature}}! Check it out now to improve your workflow."
+    },
+    { 
+      name: "Document Review Request", 
+      content: "{{sender}} has requested your review on document \"{{document}}\"."
+    }
+  ]
+};
 
 // Add a function to save template to localStorage
 const saveTemplateToStorage = (template: any) => {
@@ -61,6 +105,7 @@ const saveTemplateToStorage = (template: any) => {
 const TemplateEditor: React.FC<TemplateEditorProps> = ({ existingTemplate }) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedTemplateType, setSelectedTemplateType] = useState(existingTemplate?.type || 'email');
   
   const form = useForm<TemplateFormValues>({
     resolver: zodResolver(templateFormSchema),
@@ -89,87 +134,125 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ existingTemplate }) => 
       setIsSubmitting(false);
     }
   };
+
+  const applyPredefinedTemplate = (template: any) => {
+    form.setValue('name', template.name);
+    if (template.subject) {
+      form.setValue('subject', template.subject);
+    }
+    form.setValue('content', template.content);
+  };
+  
+  const handleTemplateTypeChange = (value: string) => {
+    setSelectedTemplateType(value as 'email' | 'sms' | 'whatsapp' | 'in-app');
+    form.setValue('type', value as any);
+    
+    // Clear subject if not email
+    if (value !== 'email') {
+      form.setValue('subject', '');
+    }
+  };
   
   return (
-    <div className="max-w-3xl mx-auto animate-fade-in">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Template Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Template Name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Template Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="sms">SMS</SelectItem>
-                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                    <SelectItem value="in-app">In-App</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          {form.getValues("type") === "email" && (
+    <div className="space-y-8 animate-fade-in">
+      <div className="max-w-3xl mx-auto">
+        <h2 className="text-xl font-semibold mb-6">Predefined Templates</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {predefinedTemplates[selectedTemplateType]?.map((template, index) => (
+            <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => applyPredefinedTemplate(template)}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-md">{template.name}</CardTitle>
+                {template.subject && <CardDescription>{template.subject}</CardDescription>}
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground line-clamp-3">{template.content}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name="subject"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Subject</FormLabel>
+                  <FormLabel>Template Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Subject" {...field} />
+                    <Input placeholder="Template Name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-          )}
-          
-          <FormField
-            control={form.control}
-            name="content"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Content</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Template Content" {...field} rows={5} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+            
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Template Type</FormLabel>
+                  <Select 
+                    onValueChange={(value) => handleTemplateTypeChange(value)} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="email">Email</SelectItem>
+                      <SelectItem value="sms">SMS</SelectItem>
+                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                      <SelectItem value="in-app">In-App</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {form.getValues("type") === "email" && (
+              <FormField
+                control={form.control}
+                name="subject"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subject</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Subject" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
-          />
-          
-          <div className="flex justify-between">
-            <Button variant="outline" onClick={() => navigate('/templates')}>Cancel</Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save Template"}
-            </Button>
-          </div>
-        </form>
-      </Form>
+            
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Content</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Template Content" {...field} rows={5} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => navigate('/templates')}>Cancel</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save Template"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 };

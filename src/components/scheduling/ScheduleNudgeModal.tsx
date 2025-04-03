@@ -28,13 +28,13 @@ export interface ScheduleNudgeData {
 }
 
 const ScheduleNudgeModal: React.FC<ScheduleNudgeModalProps> = ({ open, onClose, onSchedule }) => {
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [date, setDate] = useState<Date | undefined>(new Date());
   
   const form = useForm<ScheduleNudgeData>({
     defaultValues: {
       title: '',
       time: '09:00',
-      targetGroup: '',
+      targetGroup: 'all-employees',
       channel: 'email',
       priority: 'medium',
     },
@@ -51,7 +51,7 @@ const ScheduleNudgeModal: React.FC<ScheduleNudgeModalProps> = ({ open, onClose, 
     onSchedule(scheduleData);
     onClose();
     form.reset();
-    setDate(undefined);
+    setDate(new Date()); // Reset to today instead of undefined
   };
   
   return (
@@ -96,12 +96,13 @@ const ScheduleNudgeModal: React.FC<ScheduleNudgeModalProps> = ({ open, onClose, 
                       {date ? format(date, 'PPP') : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
                       selected={date}
                       onSelect={setDate}
                       initialFocus
+                      className="pointer-events-auto"
                       disabled={(date) => date < new Date()}
                     />
                   </PopoverContent>
@@ -128,14 +129,13 @@ const ScheduleNudgeModal: React.FC<ScheduleNudgeModalProps> = ({ open, onClose, 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Target Group</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || "select-group"}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select target group" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="select-group">Select target group</SelectItem>
                       <SelectItem value="all-employees">All Employees</SelectItem>
                       <SelectItem value="managers">Managers Only</SelectItem>
                       <SelectItem value="dev-team">Development Team</SelectItem>

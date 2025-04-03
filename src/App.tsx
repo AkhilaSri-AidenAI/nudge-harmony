@@ -22,6 +22,7 @@ import UserDashboard from "./pages/UserDashboard";
 import UserGroups from "./pages/UserGroups";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import ApiDocs from "./pages/ApiDocs";
 
 const App = () => {
   // Create a new QueryClient instance inside the component
@@ -51,6 +52,7 @@ const App = () => {
               <Route path="/user-groups" element={<AdminRoute><UserGroups /></AdminRoute>} />
               <Route path="/analytics" element={<AdminRoute><Analytics /></AdminRoute>} />
               <Route path="/settings" element={<AdminRoute><Settings /></AdminRoute>} />
+              <Route path="/api-docs" element={<AdminRoute><ApiDocs /></AdminRoute>} />
               
               {/* User routes */}
               <Route path="/user-dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
