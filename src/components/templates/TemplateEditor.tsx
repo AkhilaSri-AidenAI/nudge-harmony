@@ -11,6 +11,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -441,7 +442,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ existingTemplate }) => 
                           onClick={() => insertVariable(variable)}
                           className="text-xs"
                         >
-                          {{variable}}
+                          {`{{${variable}}}`}
                         </Button>
                       ))}
                     </div>
