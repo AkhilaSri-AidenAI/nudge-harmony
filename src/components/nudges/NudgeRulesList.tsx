@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   Table, 
@@ -113,9 +114,31 @@ const triggerIcons = {
   'event-based': <Activity className="h-4 w-4" />,
 };
 
+// Function to convert form data into the expected NudgeRule format
+const normalizeRuleData = (rule: any): NudgeRule => {
+  // Ensure we have a proper trigger object with type and details
+  const trigger = {
+    type: rule.triggerType || rule.trigger?.type || 'time-based',
+    details: rule.triggerDetails || rule.trigger?.details || 'Not specified'
+  };
+
+  // Ensure we have all required fields with default values if needed
+  return {
+    id: rule.id || String(Date.now()),
+    name: rule.name || 'Untitled Rule',
+    trigger,
+    target: rule.targetGroup || rule.target || 'All Users',
+    channel: rule.channel || 'email',
+    schedule: rule.schedule || 'immediate',
+    status: rule.status || 'inactive'
+  };
+};
+
 const getRulesFromStorage = (): any[] => {
   try {
-    return JSON.parse(localStorage.getItem('nudgeRules') || '[]');
+    const storedRules = JSON.parse(localStorage.getItem('nudgeRules') || '[]');
+    // Normalize each rule to ensure it has the correct structure
+    return storedRules.map(normalizeRuleData);
   } catch (error) {
     console.error('Error retrieving rules:', error);
     return [];
@@ -124,7 +147,8 @@ const getRulesFromStorage = (): any[] => {
 
 const NudgeRulesList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [rules, setRules] = useState<any[]>([]);
+  const [rules, setRules] = useState<NudgeRule[]>([]);
+  const navigate = useNavigate();
   
   useEffect(() => {
     const storedRules = getRulesFromStorage();
@@ -179,7 +203,18 @@ const NudgeRulesList: React.FC = () => {
   
   const handleDeleteRule = (id: string) => {
     const ruleToDelete = rules.find(rule => rule.id === id);
+    
+    // Update the rules state
     setRules(rules.filter(rule => rule.id !== id));
+    
+    // Also update localStorage
+    try {
+      const storedRules = JSON.parse(localStorage.getItem('nudgeRules') || '[]');
+      const updatedRules = storedRules.filter((rule: any) => rule.id !== id);
+      localStorage.setItem('nudgeRules', JSON.stringify(updatedRules));
+    } catch (error) {
+      console.error('Error updating localStorage:', error);
+    }
     
     toast({
       title: "Rule Deleted",
@@ -230,84 +265,85 @@ const NudgeRulesList: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredRules.map((rule) => (
-              <TableRow key={rule.id} className="hover:bg-muted/50 transition-colors">
-                <TableCell className="font-medium">{rule.name}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-muted-foreground">
-                      {triggerIcons[rule.trigger.type]}
-                    </span>
-                    <span className="text-xs">{rule.trigger.details}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1.5">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span>{rule.target}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="flex items-center gap-1.5 whitespace-nowrap">
-                    {channelIcons[rule.channel]}
-                    <span>{rule.channel.charAt(0).toUpperCase() + rule.channel.slice(1)}</span>
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <span className="capitalize">{rule.schedule}</span>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={
-                    rule.status === 'active' ? 'default' : 'secondary'
-                  } className="capitalize">
-                    {rule.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => toggleStatus(rule.id)}>
-                        {rule.status === 'active' ? (
-                          <>
-                            <Pause className="h-4 w-4 mr-2" />
-                            <span>Deactivate</span>
-                          </>
-                        ) : (
-                          <>
-                            <Play className="h-4 w-4 mr-2" />
-                            <span>Activate</span>
-                          </>
-                        )}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleViewRule(rule.id)}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        <span>View</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleEditRule(rule.id)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        <span>Edit</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        onClick={() => handleDeleteRule(rule.id)} 
-                        className="text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        <span>Delete</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-            {filteredRules.length === 0 && (
+            {filteredRules.length > 0 ? (
+              filteredRules.map((rule) => (
+                <TableRow key={rule.id} className="hover:bg-muted/50 transition-colors">
+                  <TableCell className="font-medium">{rule.name}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground">
+                        {triggerIcons[rule.trigger.type] || <Calendar className="h-4 w-4" />}
+                      </span>
+                      <span className="text-xs">{rule.trigger.details}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span>{rule.target}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="flex items-center gap-1.5 whitespace-nowrap">
+                      {channelIcons[rule.channel] || <Mail className="h-4 w-4" />}
+                      <span>{rule.channel.charAt(0).toUpperCase() + rule.channel.slice(1)}</span>
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="capitalize">{rule.schedule}</span>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={
+                      rule.status === 'active' ? 'default' : 'secondary'
+                    } className="capitalize">
+                      {rule.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => toggleStatus(rule.id)}>
+                          {rule.status === 'active' ? (
+                            <>
+                              <Pause className="h-4 w-4 mr-2" />
+                              <span>Deactivate</span>
+                            </>
+                          ) : (
+                            <>
+                              <Play className="h-4 w-4 mr-2" />
+                              <span>Activate</span>
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleViewRule(rule.id)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          <span>View</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditRule(rule.id)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          <span>Edit</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteRule(rule.id)} 
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          <span>Delete</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
               <TableRow>
                 <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
                   No nudge rules found

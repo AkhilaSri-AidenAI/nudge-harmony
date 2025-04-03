@@ -42,6 +42,8 @@ const App = () => {
               <Route path="/" element={<AdminRoute><Dashboard /></AdminRoute>} />
               <Route path="/rules" element={<AdminRoute><NudgeRules /></AdminRoute>} />
               <Route path="/rules/new" element={<AdminRoute><CreateRule /></AdminRoute>} />
+              <Route path="/rules/edit/:id" element={<AdminRoute><CreateRule /></AdminRoute>} />
+              <Route path="/rules/view/:id" element={<AdminRoute><NudgeRules /></AdminRoute>} />
               <Route path="/templates" element={<AdminRoute><Templates /></AdminRoute>} />
               <Route path="/templates/new" element={<AdminRoute><CreateTemplate /></AdminRoute>} />
               <Route path="/channels" element={<AdminRoute><Channels /></AdminRoute>} />
