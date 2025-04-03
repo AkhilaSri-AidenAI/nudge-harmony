@@ -299,40 +299,40 @@ const TemplateEditor: React.FC = () => {
                                 Preview
                               </TabsTrigger>
                             </TabsList>
+                            
+                            <TabsContent value="edit" className="m-0">
+                              <FormControl>
+                                <Textarea 
+                                  rows={12}
+                                  className="font-mono"
+                                  {...field}
+                                />
+                              </FormControl>
+                            </TabsContent>
+                            
+                            <TabsContent value="preview" className="m-0">
+                              <div className="border border-border rounded-md p-4 min-h-[240px] bg-white dark:bg-gray-950">
+                                {form.watch('type') === 'email' && (
+                                  <div className="mb-3 pb-2 border-b">
+                                    <div className="font-semibold">Subject: {form.watch('subject') || 'No subject'}</div>
+                                  </div>
+                                )}
+                                <div className="whitespace-pre-line">
+                                  {field.value
+                                    .replace(/{firstName}/g, 'John')
+                                    .replace(/{lastName}/g, 'Doe')
+                                    .replace(/{email}/g, 'john.doe@example.com')
+                                    .replace(/{taskName}/g, 'Quarterly Report')
+                                    .replace(/{taskCount}/g, '3')
+                                    .replace(/{companyName}/g, 'NudgeHarmony')
+                                    .replace(/{dueDate}/g, 'June 30, 2023')
+                                    .replace(/{lastActivity}/g, '5 days ago')
+                                  }
+                                </div>
+                              </div>
+                            </TabsContent>
                           </Tabs>
                         </div>
-                        
-                        <TabsContent value="edit" className="m-0">
-                          <FormControl>
-                            <Textarea 
-                              rows={12}
-                              className="font-mono"
-                              {...field}
-                            />
-                          </FormControl>
-                        </TabsContent>
-                        
-                        <TabsContent value="preview" className="m-0">
-                          <div className="border border-border rounded-md p-4 min-h-[240px] bg-white dark:bg-gray-950">
-                            {form.watch('type') === 'email' && (
-                              <div className="mb-3 pb-2 border-b">
-                                <div className="font-semibold">Subject: {form.watch('subject') || 'No subject'}</div>
-                              </div>
-                            )}
-                            <div className="whitespace-pre-line">
-                              {field.value
-                                .replace(/{firstName}/g, 'John')
-                                .replace(/{lastName}/g, 'Doe')
-                                .replace(/{email}/g, 'john.doe@example.com')
-                                .replace(/{taskName}/g, 'Quarterly Report')
-                                .replace(/{taskCount}/g, '3')
-                                .replace(/{companyName}/g, 'NudgeHarmony')
-                                .replace(/{dueDate}/g, 'June 30, 2023')
-                                .replace(/{lastActivity}/g, '5 days ago')
-                              }
-                            </div>
-                          </div>
-                        </TabsContent>
                       </FormItem>
                     )}
                   />
