@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar as CalendarIcon, Filter, Plus } from 'lucide-react';
+import { Calendar as CalendarIcon, Filter, Plus, X, Check } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import ScheduleNudgeModal, { ScheduleNudgeData } from '@/components/scheduling/ScheduleNudgeModal';
@@ -81,7 +81,17 @@ const Scheduling: React.FC = () => {
     channel: '',
     targetGroup: '',
   });
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  
+  // Update active filters when filters change
+  useEffect(() => {
+    const newActiveFilters: string[] = [];
+    if (filters.priority) newActiveFilters.push(`Priority: ${filters.priority}`);
+    if (filters.channel) newActiveFilters.push(`Channel: ${filters.channel}`);
+    if (filters.targetGroup) newActiveFilters.push(`Group: ${targetGroupMap[filters.targetGroup] || filters.targetGroup}`);
+    setActiveFilters(newActiveFilters);
+  }, [filters]);
   
   const handleSchedule = (data: ScheduleNudgeData) => {
     const newEvent: NudgeEvent = {
@@ -126,6 +136,13 @@ const Scheduling: React.FC = () => {
     setFiltersOpen(false);
   };
   
+  const removeFilter = (filterType: 'priority' | 'channel' | 'targetGroup') => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: ''
+    }));
+  };
+  
   // Get dates that have events for highlighting in the calendar
   const eventDates = nudgeEvents.map(event => event.date);
   
@@ -143,9 +160,9 @@ const Scheduling: React.FC = () => {
               <Button variant="outline" className="gap-2">
                 <Filter className="h-4 w-4" />
                 <span>Filter</span>
-                {(filters.priority || filters.channel || filters.targetGroup) && (
+                {activeFilters.length > 0 && (
                   <Badge variant="secondary" className="ml-1 h-5">
-                    {Object.values(filters).filter(Boolean).length}
+                    {activeFilters.length}
                   </Badge>
                 )}
               </Button>
@@ -228,6 +245,43 @@ const Scheduling: React.FC = () => {
         </div>
       </div>
       
+      {activeFilters.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {activeFilters.map((filter) => {
+            const filterType = filter.split(':')[0].trim().toLowerCase();
+            const filterKey = filterType === 'priority' ? 'priority' : 
+                              filterType === 'channel' ? 'channel' : 'targetGroup';
+            
+            return (
+              <Badge 
+                key={filter} 
+                variant="outline" 
+                className="px-3 py-1 flex items-center gap-1"
+              >
+                {filter}
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-4 w-4 ml-1 p-0 text-muted-foreground hover:text-foreground"
+                  onClick={() => removeFilter(filterKey as any)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            );
+          })}
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-7 text-xs"
+            onClick={resetFilters}
+          >
+            Clear all
+          </Button>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-1">
           <CardHeader>
@@ -304,7 +358,7 @@ const Scheduling: React.FC = () => {
               </div>
             ) : (
               <div className="text-center p-6 text-muted-foreground">
-                {filters.priority || filters.channel || filters.targetGroup ? (
+                {activeFilters.length > 0 ? (
                   <p>No nudges match the selected filters</p>
                 ) : (
                   <p>No nudges scheduled for this date</p>

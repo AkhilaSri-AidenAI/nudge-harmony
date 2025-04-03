@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Table, 
@@ -23,14 +22,14 @@ import {
   Trash2, 
   Play, 
   Pause, 
-  Copy, 
   Mail, 
   MessageSquare, 
   Bell, 
   Calendar, 
   Clock, 
   Users, 
-  Activity 
+  Activity,
+  Eye 
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -46,8 +45,8 @@ interface NudgeRule {
   };
   target: string;
   channel: 'email' | 'sms' | 'whatsapp' | 'in-app';
-  schedule: 'immediate' | 'delayed' | 'recurring';
-  status: 'active' | 'inactive' | 'draft';
+  schedule: 'immediate' | 'recurring';
+  status: 'active' | 'inactive';
 }
 
 const mockRules: NudgeRule[] = [
@@ -84,7 +83,7 @@ const mockRules: NudgeRule[] = [
     },
     target: 'Development Team',
     channel: 'sms',
-    schedule: 'delayed',
+    schedule: 'recurring',
     status: 'inactive',
   },
   {
@@ -97,7 +96,7 @@ const mockRules: NudgeRule[] = [
     target: 'Project Managers',
     channel: 'whatsapp',
     schedule: 'recurring',
-    status: 'draft',
+    status: 'inactive',
   }
 ];
 
@@ -146,29 +145,18 @@ const NudgeRulesList: React.FC = () => {
   };
   
   const handleEditRule = (id: string) => {
-    // In a real app, this would navigate to an edit page with the rule ID
+    navigate(`/rules/edit/${id}`);
     toast({
       title: "Edit Rule",
       description: "Opening rule editor...",
     });
   };
   
-  const handleDuplicateRule = (id: string) => {
-    const ruleToDuplicate = rules.find(rule => rule.id === id);
-    if (!ruleToDuplicate) return;
-    
-    const duplicatedRule = {
-      ...ruleToDuplicate,
-      id: Date.now().toString(),
-      name: `${ruleToDuplicate.name} (Copy)`,
-      status: 'draft' as const,
-    };
-    
-    setRules([duplicatedRule, ...rules]);
-    
+  const handleViewRule = (id: string) => {
+    navigate(`/rules/view/${id}`);
     toast({
-      title: "Rule Duplicated",
-      description: `A copy of "${ruleToDuplicate.name}" has been created.`
+      title: "View Rule",
+      description: "Opening rule details...",
     });
   };
   
@@ -253,8 +241,7 @@ const NudgeRulesList: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Badge variant={
-                    rule.status === 'active' ? 'default' : 
-                    rule.status === 'inactive' ? 'secondary' : 'outline'
+                    rule.status === 'active' ? 'default' : 'secondary'
                   } className="capitalize">
                     {rule.status}
                   </Badge>
@@ -282,13 +269,13 @@ const NudgeRulesList: React.FC = () => {
                           </>
                         )}
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleViewRule(rule.id)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        <span>View</span>
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleEditRule(rule.id)}>
                         <Edit className="h-4 w-4 mr-2" />
                         <span>Edit</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDuplicateRule(rule.id)}>
-                        <Copy className="h-4 w-4 mr-2" />
-                        <span>Duplicate</span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 

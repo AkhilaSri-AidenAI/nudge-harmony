@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PlusCircle, Mail, MessageSquare, Bell, Search, FileText, MoreVertical, Edit, Copy, Trash2 } from 'lucide-react';
+import { PlusCircle, Mail, MessageSquare, Bell, Search, FileText, MoreVertical, Edit, Trash2, Eye } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 
 interface Template {
   id: string;
@@ -78,11 +79,27 @@ const TemplatesList: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [templates, setTemplates] = useState(mockTemplates);
   
-  const filteredTemplates = mockTemplates.filter(template => 
+  const filteredTemplates = templates.filter(template => 
     (activeTab === 'all' || template.type === activeTab) &&
     template.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  const handleEditTemplate = (id: string) => {
+    navigate(`/templates/edit/${id}`);
+    toast.success('Opening template editor');
+  };
+  
+  const handleViewTemplate = (id: string) => {
+    navigate(`/templates/view/${id}`);
+    toast.success('Opening template details');
+  };
+  
+  const handleDeleteTemplate = (id: string) => {
+    setTemplates(templates.filter(template => template.id !== id));
+    toast.success('Template deleted successfully');
+  };
   
   return (
     <div className="space-y-4 animate-fade-in">
@@ -118,7 +135,8 @@ const TemplatesList: React.FC = () => {
               {filteredTemplates.map((template) => (
                 <div 
                   key={template.id}
-                  className="glass-card rounded-xl overflow-hidden border border-border animate-scale-in hover:shadow-md transition-shadow"
+                  className="glass-card rounded-xl overflow-hidden border border-border animate-scale-in hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => handleViewTemplate(template.id)}
                 >
                   <div className="p-4 flex justify-between items-start">
                     <div className="flex items-center gap-2">
@@ -134,23 +152,35 @@ const TemplatesList: React.FC = () => {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => navigate(`/templates/edit/${template.id}`)}>
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewTemplate(template.id);
+                        }}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          <span>View</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditTemplate(template.id);
+                        }}>
                           <Edit className="h-4 w-4 mr-2" />
                           <span>Edit</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Copy className="h-4 w-4 mr-2" />
-                          <span>Duplicate</span>
-                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteTemplate(template.id);
+                          }}
+                        >
                           <Trash2 className="h-4 w-4 mr-2" />
                           <span>Delete</span>
                         </DropdownMenuItem>
