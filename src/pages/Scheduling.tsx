@@ -53,29 +53,55 @@ const targetGroupMap: Record<string, string> = {
   'inactive-users': 'Inactive Users',
 };
 
+// Helper to get events from storage
+const getEventsFromStorage = (): NudgeEvent[] => {
+  try {
+    const storedEvents = JSON.parse(localStorage.getItem('nudgeEvents') || '[]');
+    return storedEvents.map((event: any) => ({
+      ...event,
+      date: new Date(event.date)
+    }));
+  } catch (error) {
+    console.error('Error retrieving events:', error);
+    return [];
+  }
+};
+
+// Helper to save events to storage
+const saveEventsToStorage = (events: NudgeEvent[]) => {
+  try {
+    localStorage.setItem('nudgeEvents', JSON.stringify(events));
+  } catch (error) {
+    console.error('Error saving events:', error);
+  }
+};
+
+const initialEvents: NudgeEvent[] = [
+  {
+    id: '1',
+    title: 'Weekly Status Update',
+    date: new Date(),
+    time: '09:00',
+    priority: 'medium',
+    channel: 'email',
+    targetGroup: 'all-employees'
+  },
+  {
+    id: '2',
+    title: 'Overdue Task Reminder',
+    date: new Date(),
+    time: '11:00',
+    priority: 'high',
+    channel: 'in-app',
+    targetGroup: 'dev-team'
+  }
+];
+
 const Scheduling: React.FC = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [modalOpen, setModalOpen] = useState(false);
-  const [nudgeEvents, setNudgeEvents] = useState<NudgeEvent[]>([
-    {
-      id: '1',
-      title: 'Weekly Status Update',
-      date: new Date(),
-      time: '09:00',
-      priority: 'medium',
-      channel: 'email',
-      targetGroup: 'all-employees'
-    },
-    {
-      id: '2',
-      title: 'Overdue Task Reminder',
-      date: new Date(),
-      time: '11:00',
-      priority: 'high',
-      channel: 'in-app',
-      targetGroup: 'dev-team'
-    }
-  ]);
+  const [nudgeEvents, setNudgeEvents] = useState<NudgeEvent[]>([]);
+  const [allEvents, setAllEvents] = useState<NudgeEvent[]>([]);
   const [filters, setFilters] = useState({
     priority: '',
     channel: '',
@@ -84,6 +110,42 @@ const Scheduling: React.FC = () => {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   
+  // Load events on component mount
+  useEffect(() => {
+    const storedEvents = getEventsFromStorage();
+    const events = storedEvents.length > 0 ? storedEvents : initialEvents;
+    setAllEvents(events);
+    
+    // Filter for currently selected date
+    filterEventsByDate(date, events);
+    
+    // If no stored events, save the initial ones
+    if (storedEvents.length === 0) {
+      saveEventsToStorage(initialEvents);
+    }
+  }, []);
+  
+  // Function to filter events by date
+  const filterEventsByDate = (selectedDate: Date | undefined, eventsToFilter = allEvents) => {
+    if (!selectedDate) {
+      setNudgeEvents(eventsToFilter);
+      return;
+    }
+    
+    const filteredByDate = eventsToFilter.filter(event => 
+      event.date.getDate() === selectedDate.getDate() && 
+      event.date.getMonth() === selectedDate.getMonth() && 
+      event.date.getFullYear() === selectedDate.getFullYear()
+    );
+    
+    setNudgeEvents(filteredByDate);
+  };
+  
+  // Update event filtering when date changes
+  useEffect(() => {
+    filterEventsByDate(date);
+  }, [date, allEvents]);
+  
   // Update active filters when filters change
   useEffect(() => {
     const newActiveFilters: string[] = [];
@@ -91,7 +153,25 @@ const Scheduling: React.FC = () => {
     if (filters.channel) newActiveFilters.push(`Channel: ${filters.channel}`);
     if (filters.targetGroup) newActiveFilters.push(`Group: ${targetGroupMap[filters.targetGroup] || filters.targetGroup}`);
     setActiveFilters(newActiveFilters);
-  }, [filters]);
+    
+    // Apply filters to the events
+    let filteredEvents = [...allEvents];
+    
+    if (filters.priority) {
+      filteredEvents = filteredEvents.filter(event => event.priority === filters.priority);
+    }
+    
+    if (filters.channel) {
+      filteredEvents = filteredEvents.filter(event => event.channel === filters.channel);
+    }
+    
+    if (filters.targetGroup) {
+      filteredEvents = filteredEvents.filter(event => event.targetGroup === filters.targetGroup);
+    }
+    
+    // Then filter by date
+    filterEventsByDate(date, filteredEvents);
+  }, [filters, allEvents]);
   
   const handleSchedule = (data: ScheduleNudgeData) => {
     const newEvent: NudgeEvent = {
@@ -104,28 +184,33 @@ const Scheduling: React.FC = () => {
       targetGroup: data.targetGroup
     };
     
-    setNudgeEvents([...nudgeEvents, newEvent]);
+    const updatedEvents = [...allEvents, newEvent];
+    setAllEvents(updatedEvents);
+    
+    // Update filtered events if the new event matches the current date
+    if (date && 
+        newEvent.date.getDate() === date.getDate() && 
+        newEvent.date.getMonth() === date.getMonth() && 
+        newEvent.date.getFullYear() === date.getFullYear()) {
+      setNudgeEvents([...nudgeEvents, newEvent]);
+    }
+    
+    // Save to storage
+    saveEventsToStorage(updatedEvents);
+    
     toast.success('Nudge scheduled successfully!');
   };
   
   const removeNudge = (id: string) => {
+    const updatedAllEvents = allEvents.filter(event => event.id !== id);
+    setAllEvents(updatedAllEvents);
     setNudgeEvents(nudgeEvents.filter(event => event.id !== id));
+    
+    // Save to storage
+    saveEventsToStorage(updatedAllEvents);
+    
     toast.success('Nudge removed from schedule');
   };
-  
-  const filteredEvents = nudgeEvents.filter(event => {
-    const dateMatches = date ? 
-      event.date.getDate() === date.getDate() && 
-      event.date.getMonth() === date.getMonth() && 
-      event.date.getFullYear() === date.getFullYear() 
-      : true;
-      
-    const priorityMatches = filters.priority ? event.priority === filters.priority : true;
-    const channelMatches = filters.channel ? event.channel === filters.channel : true;
-    const targetGroupMatches = filters.targetGroup ? event.targetGroup === filters.targetGroup : true;
-    
-    return dateMatches && priorityMatches && channelMatches && targetGroupMatches;
-  });
   
   const resetFilters = () => {
     setFilters({
@@ -134,6 +219,9 @@ const Scheduling: React.FC = () => {
       targetGroup: '',
     });
     setFiltersOpen(false);
+    
+    // Reset to show only date-filtered events
+    filterEventsByDate(date);
   };
   
   const removeFilter = (filterType: 'priority' | 'channel' | 'targetGroup') => {
@@ -144,7 +232,7 @@ const Scheduling: React.FC = () => {
   };
   
   // Get dates that have events for highlighting in the calendar
-  const eventDates = nudgeEvents.map(event => event.date);
+  const eventDates = allEvents.map(event => event.date);
   
   return (
     <PageContainer>
@@ -325,9 +413,9 @@ const Scheduling: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {filteredEvents.length > 0 ? (
+            {nudgeEvents.length > 0 ? (
               <div className="space-y-3">
-                {filteredEvents.map((event) => (
+                {nudgeEvents.map((event) => (
                   <div key={event.id} className="flex items-center justify-between p-3 rounded-md border">
                     <div className="flex-1">
                       <div className="flex items-center">

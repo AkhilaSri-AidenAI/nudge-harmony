@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Table, 
   TableBody, 
@@ -113,11 +113,28 @@ const triggerIcons = {
   'event-based': <Activity className="h-4 w-4" />,
 };
 
+const getRulesFromStorage = (): any[] => {
+  try {
+    return JSON.parse(localStorage.getItem('nudgeRules') || '[]');
+  } catch (error) {
+    console.error('Error retrieving rules:', error);
+    return [];
+  }
+};
+
 const NudgeRulesList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [rules, setRules] = useState(mockRules);
-  const navigate = useNavigate();
+  const [rules, setRules] = useState<any[]>([]);
   
+  useEffect(() => {
+    const storedRules = getRulesFromStorage();
+    if (storedRules.length > 0) {
+      setRules([...storedRules, ...mockRules]);
+    } else {
+      setRules(mockRules);
+    }
+  }, []);
+
   const filteredRules = rules.filter(rule => 
     rule.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     rule.target.toLowerCase().includes(searchTerm.toLowerCase())

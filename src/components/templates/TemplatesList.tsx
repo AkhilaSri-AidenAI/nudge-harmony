@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -75,11 +74,29 @@ const typeIcons = {
   'in-app': <Bell className="h-5 w-5" />,
 };
 
+const getTemplatesFromStorage = (): Template[] => {
+  try {
+    return JSON.parse(localStorage.getItem('templates') || '[]');
+  } catch (error) {
+    console.error('Error retrieving templates:', error);
+    return [];
+  }
+};
+
 const TemplatesList: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [templates, setTemplates] = useState(mockTemplates);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  
+  useEffect(() => {
+    const storedTemplates = getTemplatesFromStorage();
+    if (storedTemplates.length > 0) {
+      setTemplates([...storedTemplates, ...mockTemplates]);
+    } else {
+      setTemplates(mockTemplates);
+    }
+  }, []);
   
   const filteredTemplates = templates.filter(template => 
     (activeTab === 'all' || template.type === activeTab) &&

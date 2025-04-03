@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -44,6 +43,7 @@ import {
   Bell,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
 
 type FormValues = {
   name: string;
@@ -56,9 +56,27 @@ type FormValues = {
   priority: string;
 }
 
+const saveRuleToDatabase = (rule: FormValues) => {
+  console.log('Saving rule to database:', rule);
+  return new Promise<void>(resolve => {
+    setTimeout(() => {
+      const existingRules = JSON.parse(localStorage.getItem('nudgeRules') || '[]');
+      const newRule = {
+        id: Date.now().toString(),
+        ...rule,
+        createdAt: new Date().toISOString(),
+        status: 'active'
+      };
+      localStorage.setItem('nudgeRules', JSON.stringify([...existingRules, newRule]));
+      resolve();
+    }, 1000);
+  });
+};
+
 const RuleWizard: React.FC = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -81,10 +99,19 @@ const RuleWizard: React.FC = () => {
     setStep(step - 1);
   };
   
-  const handleSubmit = form.handleSubmit((data) => {
-    console.log('Form submitted:', data);
-    // Here you would normally save the data to your backend
-    navigate('/rules');
+  const handleSubmit = form.handleSubmit(async (data) => {
+    try {
+      setIsSubmitting(true);
+      console.log('Form submitted:', data);
+      await saveRuleToDatabase(data);
+      toast.success('Nudge rule created successfully!');
+      navigate('/rules');
+    } catch (error) {
+      console.error('Error creating rule:', error);
+      toast.error('Failed to create nudge rule');
+    } finally {
+      setIsSubmitting(false);
+    }
   });
   
   const triggerTypes = [
@@ -102,7 +129,6 @@ const RuleWizard: React.FC = () => {
   
   const scheduleTypes = [
     { value: 'immediate', label: 'Immediate' },
-    { value: 'delayed', label: 'Delayed' },
     { value: 'recurring', label: 'Recurring' },
   ];
   
@@ -397,7 +423,6 @@ const RuleWizard: React.FC = () => {
                                   </label>
                                   <p className="text-sm text-muted-foreground">
                                     {type.value === 'immediate' && 'Send as soon as the trigger condition is met'}
-                                    {type.value === 'delayed' && 'Send after a specified delay from the trigger event'}
                                     {type.value === 'recurring' && 'Send repeatedly on a defined schedule'}
                                   </p>
                                 </div>
@@ -470,8 +495,12 @@ const RuleWizard: React.FC = () => {
               Next <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button type="button" onClick={handleSubmit}>
-              Create Rule <Check className="ml-2 h-4 w-4" />
+            <Button 
+              type="button" 
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Creating...' : 'Create Rule'} {!isSubmitting && <Check className="ml-2 h-4 w-4" />}
             </Button>
           )}
         </CardFooter>
