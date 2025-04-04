@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
 import { Button } from '@/components/ui/button';
@@ -141,22 +140,22 @@ const Scheduling: React.FC = () => {
   
   useEffect(() => {
     const newActiveFilters: string[] = [];
-    if (filters.priority) newActiveFilters.push(`Priority: ${filters.priority}`);
-    if (filters.channel) newActiveFilters.push(`Channel: ${filters.channel}`);
-    if (filters.targetGroup) newActiveFilters.push(`Group: ${targetGroupMap[filters.targetGroup] || filters.targetGroup}`);
+    if (filters.priority && filters.priority !== 'any') newActiveFilters.push(`Priority: ${filters.priority}`);
+    if (filters.channel && filters.channel !== 'any') newActiveFilters.push(`Channel: ${filters.channel}`);
+    if (filters.targetGroup && filters.targetGroup !== 'any') newActiveFilters.push(`Group: ${targetGroupMap[filters.targetGroup] || filters.targetGroup}`);
     setActiveFilters(newActiveFilters);
     
     let filteredEvents = [...allEvents];
     
-    if (filters.priority) {
+    if (filters.priority && filters.priority !== 'any') {
       filteredEvents = filteredEvents.filter(event => event.priority === filters.priority);
     }
     
-    if (filters.channel) {
+    if (filters.channel && filters.channel !== 'any') {
       filteredEvents = filteredEvents.filter(event => event.channel === filters.channel);
     }
     
-    if (filters.targetGroup) {
+    if (filters.targetGroup && filters.targetGroup !== 'any') {
       filteredEvents = filteredEvents.filter(event => event.targetGroup === filters.targetGroup);
     }
     
@@ -219,7 +218,6 @@ const Scheduling: React.FC = () => {
   
   const eventDates = allEvents.map(event => event.date);
   
-  // Generate calendar day contents to show dots for events
   const getDayContents = (day: Date) => {
     const eventsOnDay = allEvents.filter(event => 
       event.date.getDate() === day.getDate() && 
@@ -283,7 +281,7 @@ const Scheduling: React.FC = () => {
                       <SelectValue placeholder="Any priority" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any priority</SelectItem>
+                      <SelectItem value="any">Any priority</SelectItem>
                       <SelectItem value="low">Low</SelectItem>
                       <SelectItem value="medium">Medium</SelectItem>
                       <SelectItem value="high">High</SelectItem>
@@ -301,7 +299,7 @@ const Scheduling: React.FC = () => {
                       <SelectValue placeholder="Any channel" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any channel</SelectItem>
+                      <SelectItem value="any">Any channel</SelectItem>
                       <SelectItem value="email">Email</SelectItem>
                       <SelectItem value="sms">SMS</SelectItem>
                       <SelectItem value="whatsapp">WhatsApp</SelectItem>
@@ -320,7 +318,7 @@ const Scheduling: React.FC = () => {
                       <SelectValue placeholder="Any group" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any group</SelectItem>
+                      <SelectItem value="any">Any group</SelectItem>
                       <SelectItem value="all-employees">All Employees</SelectItem>
                       <SelectItem value="managers">Managers Only</SelectItem>
                       <SelectItem value="dev-team">Development Team</SelectItem>
