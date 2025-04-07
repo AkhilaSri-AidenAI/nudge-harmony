@@ -30,11 +30,18 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 import { 
   AlertTriangle, 
   ArrowLeft, 
   ArrowRight, 
-  Calendar, 
+  Calendar as CalendarIcon, 
   Check, 
   Clock, 
   Mail, 
@@ -57,6 +64,8 @@ type FormValues = {
   channel: string;
   schedule: string;
   priority: string;
+  scheduleDate: Date | undefined;
+  scheduleTime: string;
 }
 
 const saveRuleToDatabase = (rule: FormValues) => {
@@ -74,13 +83,16 @@ const saveRuleToDatabase = (rule: FormValues) => {
         localStorage.setItem('nudgeRules', JSON.stringify([...existingRules, newRule]));
         
         // Also update the calendar events if this is a scheduled nudge
-        if (rule.triggerType === 'time-based') {
+        if (rule.triggerType === 'time-based' || rule.schedule === 'recurring') {
           const events = JSON.parse(localStorage.getItem('nudgeEvents') || '[]');
+          const eventDate = rule.scheduleDate || new Date();
+          const eventTime = rule.scheduleTime || '09:00';
+          
           const newEvent = {
             id: newRule.id,
             title: rule.name,
-            date: new Date(),
-            time: '09:00',
+            date: eventDate,
+            time: eventTime,
             priority: rule.priority as 'low' | 'medium' | 'high',
             channel: rule.channel as 'email' | 'sms' | 'whatsapp' | 'in-app',
             targetGroup: rule.targetGroup
@@ -113,6 +125,8 @@ const RuleWizard: React.FC = () => {
       channel: '',
       schedule: '',
       priority: 'medium',
+      scheduleDate: undefined,
+      scheduleTime: '09:00',
     }
   });
   
@@ -155,7 +169,7 @@ const RuleWizard: React.FC = () => {
   
   const triggerTypes = [
     { value: 'inactivity', label: 'Inactivity', icon: <Clock className="h-4 w-4" /> },
-    { value: 'time-based', label: 'Time-based', icon: <Calendar className="h-4 w-4" /> },
+    { value: 'time-based', label: 'Time-based', icon: <CalendarIcon className="h-4 w-4" /> },
     { value: 'event-based', label: 'Event-based', icon: <Activity className="h-4 w-4" /> },
   ];
   
@@ -507,6 +521,81 @@ const RuleWizard: React.FC = () => {
                     </FormItem>
                   )}
                 />
+
+                {(form.watch('schedule') === 'recurring' || form.watch('triggerType') === 'time-based') && (
+                  <div className="space-y-4 border border-blue-200 dark:border-blue-800/60 p-4 rounded-md bg-blue-50/50 dark:bg-blue-900/10 animate-fade-in">
+                    <h3 className="text-base font-medium">Schedule Details</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="scheduleDate"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Date</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={`w-full pl-3 text-left font-normal flex justify-between items-center ${!field.value && "text-muted-foreground"}`}
+                                  >
+                                    {field.value ? (
+                                      format(field.value, "PPP")
+                                    ) : (
+                                      <span>Pick a date</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-70" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0 z-50" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  disabled={(date) =>
+                                    date < new Date(new Date().setHours(0, 0, 0, 0))
+                                  }
+                                  initialFocus
+                                  className="pointer-events-auto"
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormDescription>
+                              Select when the nudge should be sent
+                            </FormDescription>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="scheduleTime"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Time</FormLabel>
+                            <div className="flex items-center gap-2">
+                              <FormControl>
+                                <div className="relative">
+                                  <Input
+                                    type="time"
+                                    {...field}
+                                    className="pl-9"
+                                  />
+                                  <Clock className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
+                                </div>
+                              </FormControl>
+                            </div>
+                            <FormDescription>
+                              Select the time for sending the nudge
+                            </FormDescription>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                )}
                 
                 <FormField
                   control={form.control}
